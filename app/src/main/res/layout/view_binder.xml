@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <Button
+        android:id="@+id/add_card_button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/button_gold"
+        android:backgroundTint="@null"
+        android:text="+  Add Card"
+        android:textColor="#0B1220"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"/>
+    <EditText
+        android:id="@+id/binder_search"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        android:padding="14dp"
+        android:background="@drawable/input_background"
+        android:hint="Search your collection…"
+        android:textColor="#FAF8F2"
+        android:textColorHint="#95A1B3"
+        android:textSize="14sp"
+        android:inputType="textCapSentences"
+        android:maxLength="80"
+        android:singleLine="true"/>
+    <TextView
+        android:id="@+id/binder_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="4 cards · Sample auction data"
+        android:textSize="12sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"/>
+    <GridLayout
+        android:id="@+id/binder_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:alignmentMode="alignMargins"/>
+    <TextView
+        android:id="@+id/binder_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No matching cards."
+        android:textSize="14sp"
+        android:textColor="#95A1B3"
+        android:visibility="gone"
+        android:padding="20dp"
+        android:gravity="center"/>
+</LinearLayout>

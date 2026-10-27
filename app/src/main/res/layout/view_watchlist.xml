@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/watchlist_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Saved auctions"
+        android:textSize="12sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"/>
+    <LinearLayout
+        android:id="@+id/watchlist_rows"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
+    <TextView
+        android:id="@+id/watchlist_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap the heart on an auction to save it here."
+        android:textSize="14sp"
+        android:textColor="#95A1B3"
+        android:padding="20dp"
+        android:gravity="center"/>
+</LinearLayout>

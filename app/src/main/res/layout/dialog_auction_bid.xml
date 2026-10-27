@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+    <TextView
+        android:id="@+id/bid_prompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter your bid"
+        android:textSize="14sp"
+        android:textColor="#95A1B3"/>
+    <EditText
+        android:id="@+id/bid_amount"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/input_background"
+        android:padding="12dp"
+        android:hint="Amount in pesos"
+        android:textColor="#FAF8F2"
+        android:textColorHint="#95A1B3"
+        android:inputType="number"
+        android:maxLength="9"
+        android:singleLine="true"/>
+</LinearLayout>
