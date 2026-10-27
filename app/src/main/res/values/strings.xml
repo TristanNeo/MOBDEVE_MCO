@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<resources>
+    <string name="app_name">Deckbid</string>
+    <string name="tagline">BID ON YOUR FUTURE</string>
+    <string name="login">Log in</string>
+    <string name="register">Register</string>
+    <string name="welcome">Welcome to Deckbid</string>
+    <string name="entry_message">Your next bid starts here.</string>
+    <string name="register_title">Create your account</string>
+    <string name="full_name">Full name</string>
+    <string name="birthday">Birthday</string>
+    <string name="email">Email address</string>
+    <string name="password">Password</string>
+    <string name="new_account">New to Deckbid? Register</string>
+    <string name="existing_account">Already have an account? Log in</string>
+    <string name="home">Home</string>
+    <string name="home_message">You are now in Deckbid.</string>
+    <string name="logout">Log out</string>
+</resources>
