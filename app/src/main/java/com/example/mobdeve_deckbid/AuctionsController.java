@@ -144,7 +144,7 @@ public class AuctionsController {
             bindCard(tile, filtered.get(i));
             grid.addView(tile);
         }
-        String suffix = status == 1 ? "Your active bids" : status == 2 ? "Your wins" : "Demo listings";
+        String suffix = status == 1 ? "Your active bids" : status == 2 ? "Your wins" : "All listings";
         ((TextView) activity.findViewById(R.id.auction_result_count)).setText(filtered.size() + " auctions · " + suffix);
         activity.findViewById(R.id.auction_empty).setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
     }
@@ -206,11 +206,13 @@ public class AuctionsController {
         for (int i = 0; i < Math.min(3, ending.size()); i++) {
             View row = activity.getLayoutInflater().inflate(R.layout.item_auction_row, list, false);
             bindCard(row, ending.get(i));
+            row.findViewById(R.id.auction_save).setVisibility(View.GONE);
+            row.findViewById(R.id.auction_chevron).setVisibility(View.VISIBLE);
             list.addView(row);
         }
         if (ending.isEmpty()) {
             TextView empty = new TextView(activity);
-            empty.setText("No active demo auctions.");
+            empty.setText("No active auctions.");
             empty.setTextColor(android.graphics.Color.parseColor("#95A1B3"));
             list.addView(empty);
         }

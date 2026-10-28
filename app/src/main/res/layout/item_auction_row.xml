@@ -1,89 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minHeight="108dp"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="10dp"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/binder_panel"
-    android:foreground="?android:attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="100dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/binder_panel"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
     <ImageView
         android:id="@+id/auction_image"
-        android:layout_width="58dp"
-        android:layout_height="84dp"
-        android:scaleType="fitCenter"/>
+        android:layout_width="48dp"
+        android:layout_height="72dp"
+        android:scaleType="fitCenter" />
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_marginStart="12dp">
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp">
         <TextView
-            android:id="@+id/auction_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Card"
-            android:textSize="14sp"
-            android:textColor="#FAF8F2"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:textStyle="bold"/>
+        android:id="@+id/auction_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Card"
+        android:textSize="14sp"
+        android:textColor="#FAF8F2"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textStyle="bold" />
         <TextView
-            android:id="@+id/auction_game"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Game"
-            android:textSize="11sp"
-            android:textColor="#95A1B3"/>
+        android:id="@+id/auction_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Game"
+        android:textSize="11sp"
+        android:textColor="#95A1B3" />
         <TextView
-            android:id="@+id/auction_grade"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ungraded"
-            android:textSize="11sp"
-            android:textColor="#D4A63A"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="6dp">
-            <TextView
-                android:id="@+id/auction_bid"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="₱0"
-                android:textSize="15sp"
-                android:textColor="#FAF8F2"
-                android:layout_weight="1"
-                android:textStyle="bold"/>
-            <TextView
-                android:id="@+id/auction_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time left"
-                android:textSize="11sp"
-                android:textColor="#F2B879"/>
-        </LinearLayout>
+        android:id="@+id/auction_grade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ungraded"
+        android:textSize="11sp"
+        android:textColor="#D4A63A" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="start|center_vertical">
         <TextView
-            android:id="@+id/auction_bid_count"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="0 bids"
-            android:textSize="10sp"
-            android:textColor="#95A1B3"/>
+        android:id="@+id/auction_bid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="₱0"
+        android:textSize="14sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold"
+        android:layout_marginTop="0dp" />
+        <TextView
+        android:id="@+id/auction_bid_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 bids"
+        android:textSize="10sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="3dp" />
+        <TextView
+        android:id="@+id/auction_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Time left"
+        android:textSize="11sp"
+        android:textColor="#F28B82"
+        android:layout_marginTop="3dp"
+        android:textStyle="bold" />
     </LinearLayout>
     <ImageButton
         android:id="@+id/auction_save"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_gravity="top|end"
+        android:layout_gravity="center_vertical"
         android:padding="13dp"
         android:src="@drawable/auction_heart"
         android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="Save to watchlist"/>
+        android:contentDescription="Save to watchlist" />
+    <TextView
+        android:layout_width="20dp"
+        android:layout_height="48dp"
+        android:text="›"
+        android:textSize="24sp"
+        android:textColor="#FAF8F2"
+        android:id="@+id/auction_chevron"
+        android:gravity="center"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
 </LinearLayout>

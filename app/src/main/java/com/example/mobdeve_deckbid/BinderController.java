@@ -68,7 +68,7 @@ public class BinderController {
             grid.addView(tile);
             count++;
         }
-        ((TextView) activity.findViewById(R.id.binder_count)).setText(count + " cards · Sample auction data");
+        ((TextView) activity.findViewById(R.id.binder_count)).setText(count + " cards");
         activity.findViewById(R.id.binder_empty).setVisibility(count == 0 ? View.VISIBLE : View.GONE);
     }
 }

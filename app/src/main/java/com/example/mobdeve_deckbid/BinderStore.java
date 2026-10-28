@@ -47,7 +47,7 @@ public class BinderStore {
             cards.add(c);
         }
         try {
-            JSONArray saved = new JSONArray(context.getSharedPreferences("deckbid_binder", Context.MODE_PRIVATE).getString("cards", "[]"));
+            JSONArray saved = new JSONArray(context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_binder"), Context.MODE_PRIVATE).getString("cards", "[]"));
             for (int i = 0; i < saved.length(); i++) {
                 JSONObject o = saved.getJSONObject(i);
                 Card c = new Card(o.getString("id"), o.getString("name"), o.getString("set"), o.getString("game"), o.getString("condition"), o.getInt("artwork"));
@@ -62,7 +62,7 @@ public class BinderStore {
 
     public static boolean add(Context context, Card card) {
         try {
-            android.content.SharedPreferences prefs = context.getSharedPreferences("deckbid_binder", Context.MODE_PRIVATE);
+            android.content.SharedPreferences prefs = context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_binder"), Context.MODE_PRIVATE);
             JSONArray saved = new JSONArray(prefs.getString("cards", "[]"));
             JSONObject o = new JSONObject();
             o.put("id", card.id);

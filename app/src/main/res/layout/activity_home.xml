@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true"
-    android:background="#0B1220">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        android:background="#0B1220">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="72dp"
@@ -13,33 +13,45 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp">
         <ImageView
-            android:layout_width="150dp"
-            android:layout_height="44dp"
-            android:src="@drawable/logo_in_app"
-            android:scaleType="fitCenter"
-            android:contentDescription="Deckbid"/>
+        android:layout_width="150dp"
+        android:layout_height="44dp"
+        android:src="@drawable/logo_in_app"
+        android:scaleType="fitCenter"
+        android:contentDescription="Deckbid" />
         <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"/>
-        <TextView
-            android:id="@+id/profile_shortcut"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:background="@drawable/auction_avatar"
-            android:text="C"
-            android:textColor="#D4A63A"
-            android:textSize="18sp"
-            android:contentDescription="Open profile"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"/>
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+        <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:id="@+id/profile_shortcut"
+        android:background="@drawable/auction_avatar"
+        android:contentDescription="Open profile"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
+            <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text=""
+        android:textSize="18sp"
+        android:textColor="#D4A63A"
+        android:id="@+id/header_initial"
+        android:gravity="center" />
+            <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/header_photo"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no"
+        android:background="@drawable/auction_avatar" />
+        </FrameLayout>
     </LinearLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#293548"/>
+        android:background="#293548" />
     <ScrollView
         android:id="@+id/home_scroll"
         android:layout_width="match_parent"
@@ -47,51 +59,54 @@
         android:layout_weight="1"
         android:fillViewport="true">
         <LinearLayout
-            android:focusableInTouchMode="true"
-            android:id="@+id/page_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+        android:focusableInTouchMode="true"
+        android:id="@+id/page_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
             <TextView
-                android:id="@+id/page_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Home"
-                android:textColor="#FAF8F2"
-                android:textSize="28sp"
-                android:textStyle="bold"/>
+        android:id="@+id/page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Home"
+        android:textColor="#FAF8F2"
+        android:textSize="28sp"
+        android:textStyle="bold" />
             <include
-                android:id="@+id/dashboard_content" layout="@layout/view_home_dashboard"
-                android:visibility="gone"/>
+        android:id="@+id/dashboard_content" layout="@layout/view_home_dashboard"
+        android:visibility="gone" />
             <include
-                android:id="@+id/auctions_content" layout="@layout/view_auctions"
-                android:visibility="gone"/>
+        android:id="@+id/auctions_content" layout="@layout/view_auctions"
+        android:visibility="gone" />
             <include
-                android:id="@+id/watchlist_content" layout="@layout/view_watchlist"
-                android:visibility="gone"/>
+        android:id="@+id/watchlist_content" layout="@layout/view_watchlist"
+        android:visibility="gone" />
             <include
-                android:id="@+id/binder_content" layout="@layout/view_binder"
-                android:visibility="gone"/>
+        android:id="@+id/binder_content" layout="@layout/view_binder"
+        android:visibility="gone" />
+            <include layout="@layout/view_profile"
+        android:id="@+id/profile_content"
+        android:visibility="gone" />
             <Button
-                android:id="@+id/logout_button"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="32dp"
-                android:background="@drawable/button_outline"
-                android:backgroundTint="@null"
-                android:text="Log out"
-                android:textAllCaps="false"
-                android:textColor="#D4A63A"
-                android:textSize="16sp"
-                android:onClick="logout"
-                android:visibility="gone"/>
+        android:id="@+id/logout_button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/button_outline"
+        android:backgroundTint="@null"
+        android:text="Log out"
+        android:textAllCaps="false"
+        android:textColor="#D4A63A"
+        android:textSize="16sp"
+        android:onClick="logout"
+        android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#293548"/>
+        android:background="#293548" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -102,85 +117,85 @@
         android:paddingEnd="8dp"
         android:baselineAligned="false">
         <TextView
-            android:id="@+id/tab_home"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawablePadding="6dp"
-            android:text="Home"
-            android:textColor="#D4A63A"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="selectTab"/>
+        android:id="@+id/tab_home"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:drawablePadding="6dp"
+        android:text="Home"
+        android:textColor="#D4A63A"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="selectTab" />
         <TextView
-            android:id="@+id/tab_watchlist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawablePadding="6dp"
-            android:text="Watchlist"
-            android:textColor="#95A1B3"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="selectTab"/>
+        android:id="@+id/tab_watchlist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:drawablePadding="6dp"
+        android:text="Watchlist"
+        android:textColor="#95A1B3"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="selectTab" />
         <TextView
-            android:id="@+id/tab_auctions"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawablePadding="6dp"
-            android:text="Auctions"
-            android:textColor="#95A1B3"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="selectTab"/>
+        android:id="@+id/tab_auctions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:drawablePadding="6dp"
+        android:text="Auctions"
+        android:textColor="#95A1B3"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="selectTab" />
         <TextView
-            android:id="@+id/tab_binder"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawablePadding="6dp"
-            android:text="Binder"
-            android:textColor="#95A1B3"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="selectTab"/>
+        android:id="@+id/tab_binder"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:drawablePadding="6dp"
+        android:text="Binder"
+        android:textColor="#95A1B3"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="selectTab" />
         <TextView
-            android:id="@+id/tab_profile"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawablePadding="6dp"
-            android:text="Profile"
-            android:textColor="#95A1B3"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="selectTab"/>
+        android:id="@+id/tab_profile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:drawablePadding="6dp"
+        android:text="Profile"
+        android:textColor="#95A1B3"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="selectTab" />
     </LinearLayout>
 </LinearLayout>

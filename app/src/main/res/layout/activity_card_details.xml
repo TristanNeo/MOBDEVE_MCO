@@ -97,7 +97,7 @@
                 android:id="@+id/detail_note"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sample auction data · change vs. previous 30 days"
+                android:text="Change vs. previous 30 days"
                 android:textSize="11sp"
                 android:textColor="#95A1B3"
                 android:layout_marginTop="4dp"/>

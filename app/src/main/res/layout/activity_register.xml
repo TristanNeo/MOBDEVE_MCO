@@ -37,15 +37,15 @@
                 android:textSize="26sp"
                 android:textColor="@color/ivory"/>
             <EditText
-                android:id="@+id/name_input"
+                android:id="@+id/username_input"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="16dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:background="@drawable/input_background"
-                android:hint="@string/full_name"
-                android:inputType="textPersonName"
+                android:hint="@string/username"
+                android:inputType="textVisiblePassword"
                 android:singleLine="true"
                 android:textSize="16sp"
                 android:textColor="@color/ivory"

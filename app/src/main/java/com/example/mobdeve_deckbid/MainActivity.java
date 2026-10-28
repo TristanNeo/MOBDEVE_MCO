@@ -11,7 +11,7 @@ public class MainActivity extends Activity {
     private final Runnable openEntry = new Runnable() {
         @Override
         public void run() {
-            startActivity(new Intent(MainActivity.this, EntryActivity.class));
+            startActivity(new Intent(MainActivity.this, AccountStore.currentId(MainActivity.this) > 0 ? HomeActivity.class : EntryActivity.class));
             finish();
         }
     };

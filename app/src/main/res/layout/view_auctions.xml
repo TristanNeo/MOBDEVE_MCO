@@ -118,7 +118,7 @@
         android:id="@+id/auction_result_count"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="20 auctions · Demo listings"
+        android:text="20 auctions · All listings"
         android:textSize="12sp"
         android:textColor="#95A1B3"
         android:layout_marginTop="14dp"

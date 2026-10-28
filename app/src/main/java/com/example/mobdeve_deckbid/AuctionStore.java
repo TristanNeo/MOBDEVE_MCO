@@ -15,7 +15,7 @@ public class AuctionStore {
     public static final String[] SORTS = {"Ending soon", "Lowest bid", "Highest bid"};
 
     public static ArrayList<AuctionItem> load(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("deckbid_auctions", Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_auctions"), Context.MODE_PRIVATE);
         long epoch = prefs.getLong("demo_started", 0);
         if (epoch == 0) {
             epoch = System.currentTimeMillis();
@@ -85,7 +85,7 @@ public class AuctionStore {
                 history.put(b);
             }
             o.put("history", history);
-            return context.getSharedPreferences("deckbid_auctions", Context.MODE_PRIVATE).edit().putString(a.id, o.toString()).commit();
+            return context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_auctions"), Context.MODE_PRIVATE).edit().putString(a.id, o.toString()).commit();
         } catch (JSONException e) {
             return false;
         }

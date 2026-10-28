@@ -86,7 +86,7 @@ public class AuctionDetailsActivity extends Activity {
         history.removeAllViews();
         historyRow(history, "Bidder", "Amount", "Time", true);
         for (AuctionItem.Bid bid : auction.history) {
-            historyRow(history, bid.bidder, AuctionStore.money(bid.amount), new SimpleDateFormat("MMM d, HH:mm", Locale.US).format(new Date(bid.time)), false);
+            historyRow(history, "You".equals(bid.bidder) ? AccountStore.username(this) : bid.bidder, AuctionStore.money(bid.amount), new SimpleDateFormat("MMM d, HH:mm", Locale.US).format(new Date(bid.time)), false);
         }
         updateStatus();
     }
@@ -95,7 +95,7 @@ public class AuctionDetailsActivity extends Activity {
         boolean active = auction.isActive(System.currentTimeMillis());
         label(R.id.detail_auction_time, AuctionStore.timeLeft(auction));
         String status;
-        if (!active) status = auction.isLeading() ? "You won this demo auction." : "This auction has ended.";
+        if (!active) status = auction.isLeading() ? "You won this auction." : "This auction has ended.";
         else if (auction.isLeading()) status = "You are the highest bidder.";
         else if (auction.hasBid()) status = "You have been outbid.";
         else status = "Next minimum: " + AuctionStore.money(auction.minimumBid());
@@ -115,7 +115,7 @@ public class AuctionDetailsActivity extends Activity {
         EditText amount = form.findViewById(R.id.bid_amount);
         long minimum = automatic && auction.isLeading() ? auction.currentBid : auction.minimumBid();
         String prompt = "Minimum: " + AuctionStore.money(minimum) + "\nWhole pesos only.";
-        if (automatic) prompt += "\nSets your local demo cap and places the minimum needed to lead. No live server is connected.";
+        if (automatic) prompt += "\nSets your maximum bid and places the minimum needed to lead.";
         ((TextView) form.findViewById(R.id.bid_prompt)).setText(prompt);
         amount.setText(String.valueOf(automatic && auction.autoBidMax >= minimum ? auction.autoBidMax : minimum));
         amount.selectAll();

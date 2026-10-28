@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 public class HomeActivity extends Activity {
 
+    private AccountStore.User user;
+    private static final int PICK_PROFILE_PHOTO = 501;
     private TextView pageTitle;
     private TextView homeTab;
     private TextView watchlistTab;
@@ -32,6 +34,12 @@ public class HomeActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try (AccountStore store = new AccountStore(this)) { user = store.current(); }
+        if (user == null) {
+            startActivity(new Intent(this, EntryActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_home);
 
         pageTitle = findViewById(R.id.page_title);
@@ -45,6 +53,16 @@ public class HomeActivity extends Activity {
         binderController = new BinderController(this);
         auctionsController = new AuctionsController(this);
         findViewById(R.id.profile_shortcut).setOnClickListener(v -> showTab(4));
+        findViewById(R.id.home_profile_card).setOnClickListener(v -> showTab(4));
+        findViewById(R.id.home_profile_card).setClipToOutline(true);
+        findViewById(R.id.home_explore_banner).setClipToOutline(true);
+        findViewById(R.id.upload_photo).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_PROFILE_PHOTO);
+        });
+        refreshProfile();
 
         if (savedInstanceState != null) {
             selectedTab = savedInstanceState.getInt("selected_tab", 0);
@@ -72,6 +90,7 @@ public class HomeActivity extends Activity {
 
     private void showTab(int position) {
         selectedTab = position;
+        findViewById(R.id.profile_content).setVisibility(position == 4 ? View.VISIBLE : View.GONE);
 
         TextView[] tabs = {
                 homeTab,
@@ -143,6 +162,8 @@ public class HomeActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (user == null) return;
+        refreshProfile();
         if (binderController != null && selectedTab == 3) binderController.refresh();
         if (auctionsController != null) auctionsController.refresh();
         clockHandler.removeCallbacks(updateClocks);
@@ -165,10 +186,11 @@ public class HomeActivity extends Activity {
     }
 
     public void logout(View view) {
+        AccountStore.logout(this);
         Intent intent = new Intent(HomeActivity.this, EntryActivity.class);
         intent.setFlags(
-                Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
         );
         startActivity(intent);
         finish();
@@ -177,7 +199,53 @@ public class HomeActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt("selected_tab", selectedTab);
-        outState.putInt("auction_status", auctionsController.getStatus());
+        if (auctionsController != null) outState.putInt("auction_status", auctionsController.getStatus());
         super.onSaveInstanceState(outState);
     }
+    private void refreshProfile() {
+        try (AccountStore store = new AccountStore(this)) { user = store.current(); }
+        if (user == null) return;
+        ((TextView) findViewById(R.id.home_username)).setText(user.username);
+        ((TextView) findViewById(R.id.profile_username)).setText(user.username);
+        ((TextView) findViewById(R.id.profile_email)).setText(user.email);
+        ((TextView) findViewById(R.id.profile_birthday)).setText(user.birthday);
+        String initial = user.username.substring(0, 1).toUpperCase(java.util.Locale.ROOT);
+        ((TextView) findViewById(R.id.header_initial)).setText(initial);
+        ((TextView) findViewById(R.id.profile_initial)).setText(initial);
+        android.graphics.Bitmap photo = user.photo.isEmpty() ? null : android.graphics.BitmapFactory.decodeFile(user.photo);
+        int[] ids = {R.id.header_photo, R.id.profile_photo, R.id.greeting_photo};
+        for (int id : ids) {
+            android.widget.ImageView image = findViewById(id);
+            image.setImageBitmap(photo);
+            image.setVisibility(photo == null ? View.INVISIBLE : View.VISIBLE);
+            if (id != R.id.greeting_photo) image.setClipToOutline(true);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != PICK_PROFILE_PHOTO || resultCode != RESULT_OK || data == null || data.getData() == null || user == null) return;
+        final long accountId = user.id;
+        final String oldPath = user.photo;
+        findViewById(R.id.upload_photo).setEnabled(false);
+        new Thread(() -> {
+            String path = null;
+            boolean saved = false;
+            try (AccountStore store = new AccountStore(this)) {
+                path = ProfileImages.copy(this, data.getData(), accountId);
+                saved = store.savePhoto(accountId, path);
+                if (saved && !oldPath.isEmpty()) new java.io.File(oldPath).delete();
+            } catch (Exception e) { saved = false; }
+            if (!saved && path != null) new java.io.File(path).delete();
+            final boolean success = saved;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                findViewById(R.id.upload_photo).setEnabled(true);
+                if (success) refreshProfile();
+                else android.widget.Toast.makeText(this, "Could not save that photo. Try another image.", android.widget.Toast.LENGTH_LONG).show();
+            });
+        }).start();
+    }
+
 }

@@ -32,7 +32,7 @@
         android:id="@+id/binder_count"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="4 cards · Sample auction data"
+        android:text="4 cards"
         android:textSize="12sp"
         android:textColor="#95A1B3"
         android:layout_marginTop="12dp"

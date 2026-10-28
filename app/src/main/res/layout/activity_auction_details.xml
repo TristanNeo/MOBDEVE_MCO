@@ -1,263 +1,258 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true"
-    android:background="#0B1220">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        android:background="#0B1220">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="12dp">
+        android:gravity="center_vertical">
         <Button
-            android:id="@+id/auction_back"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:background="@android:color/transparent"
-            android:backgroundTint="@null"
-            android:text="‹  Auction Details"
-            android:textSize="14sp"
-            android:textAllCaps="false"
-            android:textColor="#D4A63A"
-            android:layout_weight="1"/>
+        android:id="@+id/auction_back"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@null"
+        android:text="‹  Auction Details"
+        android:textSize="20sp"
+        android:textAllCaps="false"
+        android:textColor="#FAF8F2"
+        android:layout_weight="1"
+        android:gravity="start|center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
         <ImageButton
-            android:id="@+id/auction_save"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="top|end"
-            android:padding="13dp"
-            android:src="@drawable/auction_heart"
-            android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Save to watchlist"/>
+        android:id="@+id/auction_save"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:padding="13dp"
+        android:src="@drawable/auction_heart"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="Save to watchlist" />
     </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
                 <ImageView
-                    android:id="@+id/detail_auction_image"
-                    android:layout_width="116dp"
-                    android:layout_height="184dp"
-                    android:scaleType="fitCenter"/>
+        android:id="@+id/detail_auction_image"
+        android:layout_width="116dp"
+        android:layout_height="184dp"
+        android:scaleType="fitCenter" />
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical">
                     <TextView
-                        android:id="@+id/detail_auction_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Card"
-                        android:textSize="20sp"
-                        android:textColor="#FAF8F2"
-                        android:textStyle="bold"/>
+        android:id="@+id/detail_auction_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Card"
+        android:textSize="20sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold" />
                     <TextView
-                        android:id="@+id/detail_auction_game"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Game"
-                        android:textSize="13sp"
-                        android:textColor="#95A1B3"
-                        android:layout_marginTop="5dp"/>
+        android:id="@+id/detail_auction_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Game"
+        android:textSize="13sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="5dp" />
                     <TextView
-                        android:id="@+id/detail_auction_grade"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Ungraded"
-                        android:textSize="12sp"
-                        android:textColor="#D4A63A"
-                        android:layout_marginTop="8dp"/>
+        android:id="@+id/detail_auction_grade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ungraded"
+        android:textSize="12sp"
+        android:textColor="#D4A63A"
+        android:layout_marginTop="8dp" />
                     <TextView
-                        android:id="@+id/detail_auction_seller"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Seller"
-                        android:textSize="12sp"
-                        android:textColor="#95A1B3"
-                        android:layout_marginTop="8dp"/>
+        android:id="@+id/detail_auction_seller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seller"
+        android:textSize="12sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="20dp">
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
                     <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Current Bid"
-                        android:textSize="12sp"
-                        android:textColor="#95A1B3"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Current Bid"
+        android:textSize="12sp"
+        android:textColor="#95A1B3" />
                     <TextView
-                        android:id="@+id/detail_auction_bid"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="₱0"
-                        android:textSize="28sp"
-                        android:textColor="#FAF8F2"
-                        android:textStyle="bold"/>
+        android:id="@+id/detail_auction_bid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="₱0"
+        android:textSize="28sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold" />
                     <TextView
-                        android:id="@+id/detail_auction_count"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="0 bids"
-                        android:textSize="12sp"
-                        android:textColor="#95A1B3"/>
+        android:id="@+id/detail_auction_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 bids"
+        android:textSize="12sp"
+        android:textColor="#95A1B3" />
                 </LinearLayout>
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
                     <TextView
-                        android:id="@+id/detail_auction_start"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Starting bid"
-                        android:textSize="12sp"
-                        android:textColor="#95A1B3"/>
+        android:id="@+id/detail_auction_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Starting bid"
+        android:textSize="12sp"
+        android:textColor="#95A1B3" />
                     <TextView
-                        android:id="@+id/detail_auction_increment"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Increment"
-                        android:textSize="12sp"
-                        android:textColor="#95A1B3"
-                        android:layout_marginTop="8dp"/>
+        android:id="@+id/detail_auction_increment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Increment"
+        android:textSize="12sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </LinearLayout>
             <TextView
-                android:id="@+id/detail_auction_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Time left"
-                android:textSize="16sp"
-                android:textColor="#F2B879"
-                android:layout_marginTop="12dp"/>
+        android:id="@+id/detail_auction_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Time left"
+        android:textSize="16sp"
+        android:textColor="#F2B879"
+        android:layout_marginTop="12dp" />
             <TextView
-                android:id="@+id/detail_auction_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="12sp"
-                android:textColor="#D4A63A"
-                android:layout_marginTop="5dp"/>
+        android:id="@+id/detail_auction_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="#D4A63A"
+        android:layout_marginTop="5dp" />
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp">
                 <Button
-                    android:id="@+id/auction_auto_bid"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/button_outline"
-                    android:backgroundTint="@null"
-                    android:text="Auto-Bid"
-                    android:textSize="14sp"
-                    android:textAllCaps="false"
-                    android:textColor="#D4A63A"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"/>
+        android:id="@+id/auction_auto_bid"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="@drawable/button_outline"
+        android:backgroundTint="@null"
+        android:text="Auto-Bid"
+        android:textSize="14sp"
+        android:textAllCaps="false"
+        android:textColor="#D4A63A"
+        android:layout_weight="1"
+        android:layout_marginEnd="6dp" />
                 <Button
-                    android:id="@+id/auction_place_bid"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/button_gold"
-                    android:backgroundTint="@null"
-                    android:text="Place Bid"
-                    android:textSize="14sp"
-                    android:textAllCaps="false"
-                    android:textColor="#0B1220"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"/>
+        android:id="@+id/auction_place_bid"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="@drawable/button_gold"
+        android:backgroundTint="@null"
+        android:text="Place Bid"
+        android:textSize="14sp"
+        android:textAllCaps="false"
+        android:textColor="#0B1220"
+        android:layout_weight="1"
+        android:layout_marginStart="6dp" />
             </LinearLayout>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Demo auction · no payment or live bidding"
-                android:textSize="11sp"
-                android:textColor="#95A1B3"
-                android:layout_marginTop="10dp"/>
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/binder_panel"
-                android:padding="14dp"
-                android:layout_marginTop="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/binder_panel"
+        android:padding="14dp"
+        android:layout_marginTop="20dp">
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Auction Summary"
-                    android:textSize="18sp"
-                    android:textColor="#FAF8F2"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="10dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auction Summary"
+        android:textSize="18sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp" />
                 <LinearLayout
-                    android:id="@+id/auction_summary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+        android:id="@+id/auction_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
             </LinearLayout>
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Bid History"
-                android:textSize="18sp"
-                android:textColor="#FAF8F2"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bid History"
+        android:textSize="18sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp" />
             <LinearLayout
-                android:id="@+id/auction_history"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/binder_panel"
-                android:padding="10dp"/>
+        android:id="@+id/auction_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/binder_panel"
+        android:padding="10dp" />
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/binder_panel"
-                android:padding="14dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/binder_panel"
+        android:padding="14dp">
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Seller Notes"
-                    android:textSize="18sp"
-                    android:textColor="#FAF8F2"
-                    android:textStyle="bold"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seller Notes"
+        android:textSize="18sp"
+        android:textColor="#FAF8F2"
+        android:textStyle="bold" />
                 <TextView
-                    android:id="@+id/auction_notes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Notes"
-                    android:textSize="13sp"
-                    android:textColor="#95A1B3"
-                    android:layout_marginTop="8dp"/>
+        android:id="@+id/auction_notes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Notes"
+        android:textSize="13sp"
+        android:textColor="#95A1B3"
+        android:layout_marginTop="8dp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

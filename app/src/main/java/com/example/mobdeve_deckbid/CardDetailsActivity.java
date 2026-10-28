@@ -68,7 +68,7 @@ public class CardDetailsActivity extends Activity {
         double multiplier = selectedCondition.equals("PSA 10") ? 2.4 : selectedCondition.equals("PSA 9") ? 1.6 : 1;
         double average = card.average * multiplier;
         value.setText(BinderStore.money(average));
-        ((TextView) findViewById(R.id.detail_note)).setText("Sample data · " + selectedCondition + " · change vs. previous 30 days\nAverage of the five completed auctions below.");
+        ((TextView) findViewById(R.id.detail_note)).setText("" + selectedCondition + " · change vs. previous 30 days\nAverage of the five completed auctions below.");
         row(highest, new String[]{"#", "Price", "Date", "Condition"}, true);
         double[] prices = {1.4, 1.15, 1.0, 0.8, 0.65};
         String[] dates = {"Oct 24, 2026", "Oct 21, 2026", "Oct 18, 2026", "Oct 14, 2026", "Oct 09, 2026"};
