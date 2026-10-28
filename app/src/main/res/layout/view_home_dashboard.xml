@@ -9,9 +9,9 @@
         android:id="@+id/home_profile_card"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="14dp"
-        android:background="@drawable/binder_panel"
-        android:minHeight="112dp"
+        android:padding="16dp"
+        android:background="@drawable/home_greeting_shade"
+        android:minHeight="104dp"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
@@ -47,15 +47,6 @@
         android:textColor="#95A1B3"
         android:layout_marginTop="6dp" />
         </LinearLayout>
-        <ImageView
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:id="@+id/greeting_photo"
-        android:scaleType="centerCrop"
-        android:alpha="0.25"
-        android:background="@drawable/auction_avatar"
-        android:layout_marginStart="8dp"
-        android:importantForAccessibility="no" />
         <TextView
         android:layout_width="24dp"
         android:layout_height="48dp"

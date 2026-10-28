@@ -42,10 +42,11 @@
         android:id="@+id/register_photo"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
-        android:background="@drawable/auction_avatar"
-        android:src="@drawable/ic_nav_profile"
-        android:scaleType="centerCrop"
-        android:contentDescription="Profile photo" />
+        android:background="@drawable/registration_avatar"
+        android:src="@drawable/ic_profile_placeholder"
+        android:scaleType="fitCenter"
+        android:contentDescription="Profile photo"
+        android:padding="20dp" />
             <Button
         android:layout_width="wrap_content"
         android:layout_height="48dp"

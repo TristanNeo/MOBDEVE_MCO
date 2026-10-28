@@ -55,7 +55,7 @@ public class RegisterActivity extends Activity {
             store.startSession(id);
             store.close();
             Intent intent = new Intent(this, HomeActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
             startActivity(intent);
             finish();
         });
@@ -67,8 +67,16 @@ public class RegisterActivity extends Activity {
     private void showPhoto() {
         android.widget.ImageView photo = findViewById(R.id.register_photo);
         photo.setClipToOutline(true);
-        if (AccountStore.registrationPhoto != null) photo.setImageBitmap(AccountStore.registrationPhoto);
-        else photo.setImageResource(R.drawable.ic_nav_profile);
+        if (AccountStore.registrationPhoto != null) {
+            photo.setPadding(0, 0, 0, 0);
+            photo.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            photo.setImageBitmap(AccountStore.registrationPhoto);
+        } else {
+            int inset = Math.round(20 * getResources().getDisplayMetrics().density);
+            photo.setPadding(inset, inset, inset, inset);
+            photo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+            photo.setImageResource(R.drawable.ic_profile_placeholder);
+        }
     }
 
     @Override

@@ -189,8 +189,8 @@ public class HomeActivity extends Activity {
         AccountStore.logout(this);
         Intent intent = new Intent(HomeActivity.this, EntryActivity.class);
         intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+                Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION
         );
         startActivity(intent);
         finish();
@@ -213,7 +213,7 @@ public class HomeActivity extends Activity {
         ((TextView) findViewById(R.id.header_initial)).setText(initial);
         ((TextView) findViewById(R.id.profile_initial)).setText(initial);
         android.graphics.Bitmap photo = user.photo;
-        int[] ids = {R.id.header_photo, R.id.profile_photo, R.id.greeting_photo};
+        int[] ids = {R.id.header_photo, R.id.profile_photo};
         for (int id : ids) {
             android.widget.ImageView image = findViewById(id);
             image.setImageBitmap(photo);

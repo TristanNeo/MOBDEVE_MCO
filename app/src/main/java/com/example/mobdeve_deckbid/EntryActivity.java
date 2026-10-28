@@ -18,6 +18,7 @@ public class EntryActivity extends Activity {
             public void onClick(View view) {
                 Intent intent = new Intent(EntryActivity.this, LoginActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
         Button register_button = findViewById(R.id.register_button);
@@ -26,6 +27,7 @@ public class EntryActivity extends Activity {
             public void onClick(View view) {
                 Intent intent = new Intent(EntryActivity.this, RegisterActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
     }

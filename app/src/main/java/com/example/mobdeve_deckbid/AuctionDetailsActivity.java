@@ -68,8 +68,8 @@ public class AuctionDetailsActivity extends Activity {
         label(R.id.detail_auction_seller, "by " + auction.seller);
         label(R.id.detail_auction_bid, AuctionStore.money(auction.currentBid));
         label(R.id.detail_auction_count, auction.history.size() + " bids");
-        label(R.id.detail_auction_start, "Starting bid\n" + AuctionStore.money(auction.startingBid));
-        label(R.id.detail_auction_increment, "Bid increment\n" + AuctionStore.money(auction.increment));
+        label(R.id.detail_auction_start, AuctionStore.money(auction.startingBid));
+        label(R.id.detail_auction_increment, AuctionStore.money(auction.increment));
         String[] notes = {
             "A standout card with artwork that deserves a place at the front of a binder. One of my personal favourites.",
             "A memorable addition for anyone building a collection around this series. The illustration is the highlight for me.",
