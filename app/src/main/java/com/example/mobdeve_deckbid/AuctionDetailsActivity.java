@@ -96,14 +96,15 @@ public class AuctionDetailsActivity extends Activity {
 
     private void updateStatus() {
         boolean active = auction.isActive(System.currentTimeMillis());
-        label(R.id.detail_auction_time, AuctionStore.timeLeft(auction));
+        label(R.id.detail_auction_time, countdown());
         String status;
         if (!active) status = auction.isLeading() ? "You won this auction." : "This auction has ended.";
         else if (auction.isLeading()) status = "You are the highest bidder.";
         else if (auction.hasBid()) status = "You have been outbid.";
-        else status = "Next minimum: " + AuctionStore.money(auction.minimumBid());
-        if (active && auction.autoBidMax > 0) status += "\nAuto-bid maximum: " + AuctionStore.money(auction.autoBidMax);
+        else status = "";
+        if (active && auction.autoBidMax > 0) status += (status.isEmpty() ? "" : "\n") + "Auto-bid maximum: " + AuctionStore.money(auction.autoBidMax);
         label(R.id.detail_auction_status, status);
+        findViewById(R.id.detail_auction_status).setVisibility(status.isEmpty() ? View.GONE : View.VISIBLE);
         Button bid = findViewById(R.id.auction_place_bid);
         Button auto = findViewById(R.id.auction_auto_bid);
         bid.setEnabled(active && !auction.isLeading());
@@ -213,6 +214,18 @@ public class AuctionDetailsActivity extends Activity {
         View line = new View(this);
         line.setBackgroundColor(android.graphics.Color.parseColor("#293548"));
         parent.addView(line, new LinearLayout.LayoutParams(-1, dp(1)));
+    }
+
+    private String countdown() {
+        long remaining = auction.endsAt - System.currentTimeMillis();
+        if (remaining <= 0) return "Ended";
+        long seconds = (remaining + 999) / 1000;
+        long hours = seconds / 3600;
+        long minutes = seconds % 3600 / 60;
+        long lastSeconds = seconds % 60;
+        if (hours >= 24) return String.format(Locale.US, "%dd %02d:%02d:%02d left", hours / 24, hours % 24, minutes, lastSeconds);
+        if (hours > 0) return String.format(Locale.US, "%dh %02dm %02ds left", hours, minutes, lastSeconds);
+        return String.format(Locale.US, "%dm %02ds left", minutes, lastSeconds);
     }
 
     private String date(long time) {
