@@ -70,18 +70,21 @@ public class AuctionDetailsActivity extends Activity {
         label(R.id.detail_auction_count, auction.history.size() + " bids");
         label(R.id.detail_auction_start, "Starting bid\n" + AuctionStore.money(auction.startingBid));
         label(R.id.detail_auction_increment, "Bid increment\n" + AuctionStore.money(auction.increment));
-        label(R.id.auction_notes, "Condition: " + auction.condition + ". Please review the card image before bidding. The card will be packed in a sleeve and protective holder. Shipping is ₱60 within the Philippines.");
+        String[] notes = {
+            "A standout card with artwork that deserves a place at the front of a binder. One of my personal favourites.",
+            "A memorable addition for anyone building a collection around this series. The illustration is the highlight for me.",
+            "Making room for a new collecting goal. I hope this card finds a home with someone who enjoys it as much as I have.",
+            "This card has been a favourite in my collection. A great conversation piece for fellow collectors."
+        };
+        label(R.id.auction_notes, notes[Math.floorMod(auction.id.hashCode(), notes.length)]);
         ImageButton heart = findViewById(R.id.auction_save);
         heart.setImageResource(auction.saved ? R.drawable.auction_heart_saved : R.drawable.auction_heart);
         heart.setContentDescription(auction.saved ? "Remove from watchlist" : "Save to watchlist");
         LinearLayout summary = findViewById(R.id.auction_summary);
         summary.removeAllViews();
-        summaryRow(summary, "Watchlist", auction.saved ? "Saved" : "Not saved");
         summaryRow(summary, "Total bids", String.valueOf(auction.history.size()));
         summaryRow(summary, "Start date", date(auction.startsAt));
         summaryRow(summary, "End date", date(auction.endsAt));
-        summaryRow(summary, "Anti-snipe", "+5 min in final 5 min");
-        summaryRow(summary, "Shipping", "₱60 · Philippines");
         LinearLayout history = findViewById(R.id.auction_history);
         history.removeAllViews();
         historyRow(history, "Bidder", "Amount", "Time", true);
@@ -177,27 +180,39 @@ public class AuctionDetailsActivity extends Activity {
         row.addView(left, new LinearLayout.LayoutParams(0, -2, 1));
         TextView right = new TextView(this);
         right.setText(value);
-        right.setTextSize(12);
+        right.setTextSize(13);
+        right.setTypeface(null, android.graphics.Typeface.BOLD);
         right.setGravity(android.view.Gravity.END);
         right.setTextColor(android.graphics.Color.parseColor("#FAF8F2"));
         row.addView(right, new LinearLayout.LayoutParams(0, -2, 1.6f));
         parent.addView(row);
+        divider(parent);
     }
 
     private void historyRow(LinearLayout parent, String bidder, String amount, String time, boolean heading) {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(10), 0, dp(10));
+        row.setMinimumHeight(dp(44));
+        if (heading) row.setBackgroundColor(android.graphics.Color.parseColor("#182B3E"));
         String[] values = {bidder, amount, time};
-        for (String value : values) {
+        float[] weights = {1.3f, 1f, 1.1f};
+        for (int i = 0; i < values.length; i++) {
             TextView cell = new TextView(this);
-            cell.setText(value);
-            cell.setTextSize(11);
-            cell.setPadding(dp(3), 0, dp(3), 0);
+            cell.setText(values[i]);
+            cell.setTextSize(heading ? 10 : 11);
+            cell.setPadding(dp(5), dp(8), dp(5), dp(8));
             cell.setTextColor(android.graphics.Color.parseColor(heading ? "#95A1B3" : "#FAF8F2"));
-            row.addView(cell, new LinearLayout.LayoutParams(0, -2, 1));
+            if (!heading && i == 1) cell.setTypeface(null, android.graphics.Typeface.BOLD);
+            row.addView(cell, new LinearLayout.LayoutParams(0, -2, weights[i]));
         }
         parent.addView(row);
+        divider(parent);
+    }
+
+    private void divider(LinearLayout parent) {
+        View line = new View(this);
+        line.setBackgroundColor(android.graphics.Color.parseColor("#293548"));
+        parent.addView(line, new LinearLayout.LayoutParams(-1, dp(1)));
     }
 
     private String date(long time) {

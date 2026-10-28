@@ -53,7 +53,7 @@ public class HomeActivity extends Activity {
         binderController = new BinderController(this);
         auctionsController = new AuctionsController(this);
         findViewById(R.id.profile_shortcut).setOnClickListener(v -> showTab(4));
-        findViewById(R.id.home_profile_card).setOnClickListener(v -> showTab(4));
+        findViewById(R.id.home_profile_card).setOnClickListener(v -> showTab(3));
         findViewById(R.id.home_profile_card).setClipToOutline(true);
         findViewById(R.id.home_explore_banner).setClipToOutline(true);
         findViewById(R.id.upload_photo).setOnClickListener(v -> {
@@ -212,13 +212,13 @@ public class HomeActivity extends Activity {
         String initial = user.username.substring(0, 1).toUpperCase(java.util.Locale.ROOT);
         ((TextView) findViewById(R.id.header_initial)).setText(initial);
         ((TextView) findViewById(R.id.profile_initial)).setText(initial);
-        android.graphics.Bitmap photo = user.photo.isEmpty() ? null : android.graphics.BitmapFactory.decodeFile(user.photo);
+        android.graphics.Bitmap photo = user.photo;
         int[] ids = {R.id.header_photo, R.id.profile_photo, R.id.greeting_photo};
         for (int id : ids) {
             android.widget.ImageView image = findViewById(id);
             image.setImageBitmap(photo);
             image.setVisibility(photo == null ? View.INVISIBLE : View.VISIBLE);
-            if (id != R.id.greeting_photo) image.setClipToOutline(true);
+            image.setClipToOutline(true);
         }
     }
 
@@ -227,17 +227,14 @@ public class HomeActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != PICK_PROFILE_PHOTO || resultCode != RESULT_OK || data == null || data.getData() == null || user == null) return;
         final long accountId = user.id;
-        final String oldPath = user.photo;
         findViewById(R.id.upload_photo).setEnabled(false);
         new Thread(() -> {
-            String path = null;
+            android.graphics.Bitmap photo = null;
             boolean saved = false;
             try (AccountStore store = new AccountStore(this)) {
-                path = ProfileImages.copy(this, data.getData(), accountId);
-                saved = store.savePhoto(accountId, path);
-                if (saved && !oldPath.isEmpty()) new java.io.File(oldPath).delete();
+                photo = ProfileImages.load(this, data.getData());
+                saved = store.savePhoto(accountId, photo);
             } catch (Exception e) { saved = false; }
-            if (!saved && path != null) new java.io.File(path).delete();
             final boolean success = saved;
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;

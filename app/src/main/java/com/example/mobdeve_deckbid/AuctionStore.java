@@ -1,7 +1,6 @@
 package com.example.mobdeve_deckbid;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,18 +8,15 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class AuctionStore {
+    private static final java.util.HashMap<String, String> saved = new java.util.HashMap<>();
+    private static long epoch = System.currentTimeMillis();
+    public static void reset() { saved.clear(); epoch = System.currentTimeMillis(); }
     public static final String[] CATEGORIES = {"All games", "Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
     public static final String[] CONDITIONS = {"All conditions", "Ungraded", "PSA 9", "PSA 10"};
     public static final String[] PRICES = {"Any price", "Under ₱1,000", "₱1,000–₱5,000", "Over ₱5,000"};
     public static final String[] SORTS = {"Ending soon", "Lowest bid", "Highest bid"};
 
     public static ArrayList<AuctionItem> load(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_auctions"), Context.MODE_PRIVATE);
-        long epoch = prefs.getLong("demo_started", 0);
-        if (epoch == 0) {
-            epoch = System.currentTimeMillis();
-            prefs.edit().putLong("demo_started", epoch).apply();
-        }
         String[] names = {"Mega Greninja ex", "Charizard ex", "Blaziken", "Furret", "Giratina V", "Portgas D. Ace", "Monkey D. Luffy", "Sabo", "Izo", "Nami", "Dragon Master Magia", "Chaos Emperor Dragon", "Legendary Fire King Ponix", "Red-Eyes Darkness Metal Dragon", "Honest", "Thornscape Battlemage", "Clive, Ifrit's Dominant", "Endurance", "Firion, Wild Rose Warrior", "Bofur, Reliable Guardian"};
         int[] images = {R.drawable.pokemon1, R.drawable.pokemon2, R.drawable.pokemon3, R.drawable.pokemon4, R.drawable.pokemon5, R.drawable.onepiece1, R.drawable.onepiece2, R.drawable.onepiece3, R.drawable.onepiece4, R.drawable.onepiece5, R.drawable.yugioh1, R.drawable.yugioh2, R.drawable.yugioh3, R.drawable.yugioh4, R.drawable.yugioh5, R.drawable.mtg1, R.drawable.mtg2, R.drawable.mtg3, R.drawable.mtg4, R.drawable.mtg5};
         long[] values = {1500, 6800, 900, 600, 12500, 8500, 4200, 2100, 750, 1100, 18000, 3200, 650, 1200, 800, 500, 2400, 1800, 950, 550};
@@ -41,7 +37,7 @@ public class AuctionStore {
             a.startsAt = epoch - 86400000L;
             a.endsAt = epoch + (2L + i * 3L) * 3600000L + (i % 3) * 840000L;
             for (int j = 0; j < 5; j++) a.history.add(new AuctionItem.Bid(bidders[j], a.currentBid - j * a.increment, epoch - (j + 1) * 900000L));
-            String stored = prefs.getString(a.id, "");
+            String stored = saved.containsKey(a.id) ? saved.get(a.id) : "";
             if (!stored.isEmpty()) {
                 try {
                     JSONObject o = new JSONObject(stored);
@@ -85,7 +81,8 @@ public class AuctionStore {
                 history.put(b);
             }
             o.put("history", history);
-            return context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_auctions"), Context.MODE_PRIVATE).edit().putString(a.id, o.toString()).commit();
+            saved.put(a.id, o.toString());
+            return true;
         } catch (JSONException e) {
             return false;
         }

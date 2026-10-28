@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class ProfileImages {
-    public static String copy(Context context, Uri uri, long accountId) throws Exception {
+    public static Bitmap load(Context context, Uri uri) throws Exception {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         try (InputStream stream = context.getContentResolver().openInputStream(uri)) {
@@ -44,10 +42,6 @@ public class ProfileImages {
             if (rotated != bitmap) bitmap.recycle();
             bitmap = rotated;
         }
-        File file = File.createTempFile("profile_" + accountId + "_", ".jpg", context.getFilesDir());
-        try (FileOutputStream stream = new FileOutputStream(file)) {
-            if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)) throw new Exception("Could not save image");
-        } finally { bitmap.recycle(); }
-        return file.getAbsolutePath();
+        return bitmap;
     }
 }

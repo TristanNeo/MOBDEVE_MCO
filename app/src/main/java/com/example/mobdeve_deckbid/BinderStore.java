@@ -5,13 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.widget.ImageView;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class BinderStore {
+    private static final ArrayList<Card> addedCards = new ArrayList<>();
+    public static void reset() { addedCards.clear(); }
     public static final String[] CONDITIONS = {"Ungraded", "PSA 9", "PSA 10"};
     public static final String[] GAMES = {"Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
     public static final String[] ARTWORK = {"Snorlax ex", "Portgas D. Ace", "Pot of Greed", "Timesifter"};
@@ -46,37 +46,13 @@ public class BinderStore {
             c.change = changes[i];
             cards.add(c);
         }
-        try {
-            JSONArray saved = new JSONArray(context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_binder"), Context.MODE_PRIVATE).getString("cards", "[]"));
-            for (int i = 0; i < saved.length(); i++) {
-                JSONObject o = saved.getJSONObject(i);
-                Card c = new Card(o.getString("id"), o.getString("name"), o.getString("set"), o.getString("game"), o.getString("condition"), o.getInt("artwork"));
-                c.uri = o.optString("uri", "");
-                cards.add(c);
-            }
-        } catch (org.json.JSONException e) {
-            android.util.Log.e("BinderStore", "Unable to read saved cards", e);
-        }
+        cards.addAll(addedCards);
         return cards;
     }
 
     public static boolean add(Context context, Card card) {
-        try {
-            android.content.SharedPreferences prefs = context.getSharedPreferences(AccountStore.preferencesName(context, "deckbid_binder"), Context.MODE_PRIVATE);
-            JSONArray saved = new JSONArray(prefs.getString("cards", "[]"));
-            JSONObject o = new JSONObject();
-            o.put("id", card.id);
-            o.put("name", card.name);
-            o.put("set", card.set);
-            o.put("game", card.game);
-            o.put("condition", card.condition);
-            o.put("artwork", card.artwork);
-            o.put("uri", card.uri);
-            saved.put(o);
-            return prefs.edit().putString("cards", saved.toString()).commit();
-        } catch (org.json.JSONException e) {
-            return false;
-        }
+        addedCards.add(card);
+        return true;
     }
 
     public static String money(double amount) {

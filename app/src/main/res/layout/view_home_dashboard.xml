@@ -3,47 +3,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/home_profile_card"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="14dp"
         android:background="@drawable/binder_panel"
         android:minHeight="112dp"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:contentDescription="Open your profile">
-        <ImageView
-        android:layout_width="136dp"
-        android:layout_height="match_parent"
-        android:id="@+id/greeting_photo"
-        android:scaleType="centerCrop"
-        android:importantForAccessibility="no"
-        android:layout_gravity="end"
-        android:alpha="0.3" />
-        <View
-        android:layout_width="160dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:background="@drawable/profile_fade" />
+        android:contentDescription="Open your binder">
         <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:paddingEnd="64dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
             <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Good afternoon,"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:textColor="#95A1B3"
         android:id="@+id/home_greeting" />
             <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="26sp"
+        android:text="Username"
+        android:textSize="23sp"
         android:textColor="#FAF8F2"
         android:id="@+id/home_username"
         android:textStyle="bold"
@@ -54,20 +43,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Your collection. Your next bid."
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:textColor="#95A1B3"
         android:layout_marginTop="6dp" />
         </LinearLayout>
+        <ImageView
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:id="@+id/greeting_photo"
+        android:scaleType="centerCrop"
+        android:alpha="0.25"
+        android:background="@drawable/auction_avatar"
+        android:layout_marginStart="8dp"
+        android:importantForAccessibility="no" />
         <TextView
-        android:layout_width="48dp"
+        android:layout_width="24dp"
         android:layout_height="48dp"
         android:text="›"
-        android:textSize="28sp"
+        android:textSize="26sp"
         android:textColor="#FAF8F2"
-        android:layout_gravity="end|center_vertical"
         android:gravity="center"
         android:importantForAccessibility="no" />
-    </FrameLayout>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -124,36 +121,26 @@
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground" />
     </LinearLayout>
-    <FrameLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/home_explore_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:background="@drawable/banner_panel"
+        android:padding="14dp"
         android:layout_marginTop="16dp"
-        android:minHeight="168dp">
-        <ImageView
-        android:layout_width="160dp"
-        android:layout_height="match_parent"
-        android:src="@drawable/view_auction_shade"
-        android:scaleType="centerCrop"
-        android:layout_gravity="end"
-        android:importantForAccessibility="no" />
-        <View
-        android:layout_width="180dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:background="@drawable/banner_fade" />
+        android:minHeight="156dp">
         <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:paddingEnd="110dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
             <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Find your next card"
-        android:textSize="19sp"
+        android:textSize="18sp"
         android:textColor="#FAF8F2"
         android:textStyle="bold" />
             <TextView
@@ -170,14 +157,46 @@
         android:background="@drawable/button_gold"
         android:backgroundTint="@null"
         android:text="View Auctions  →"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:textAllCaps="false"
         android:textColor="#0B1220"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="10dp" />
         </LinearLayout>
-    </FrameLayout>
+        <FrameLayout
+        android:layout_width="112dp"
+        android:layout_height="128dp"
+        android:layout_marginStart="6dp">
+            <ImageView
+        android:layout_width="64dp"
+        android:layout_height="96dp"
+        android:src="@drawable/pokemon3"
+        android:scaleType="fitCenter"
+        android:rotation="-12"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="18dp"
+        android:importantForAccessibility="no" />
+            <ImageView
+        android:layout_width="64dp"
+        android:layout_height="96dp"
+        android:src="@drawable/pokemon2"
+        android:scaleType="fitCenter"
+        android:rotation="-5"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:importantForAccessibility="no" />
+            <ImageView
+        android:layout_width="64dp"
+        android:layout_height="96dp"
+        android:src="@drawable/pokemon1"
+        android:scaleType="fitCenter"
+        android:rotation="9"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="4dp"
+        android:importantForAccessibility="no" />
+        </FrameLayout>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

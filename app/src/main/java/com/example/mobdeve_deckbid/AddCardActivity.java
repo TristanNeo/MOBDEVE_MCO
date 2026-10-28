@@ -92,7 +92,6 @@ public class AddCardActivity extends Activity {
         if (requestCode == 10 && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try {
-                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 photoUri = uri.toString();
                 preview();
             } catch (SecurityException e) {

@@ -20,27 +20,19 @@ public class LoginActivity extends Activity {
             String password = passwordInput.getText().toString();
             if (email.isEmpty()) { emailInput.setError("Enter your email address"); return; }
             if (password.isEmpty()) { passwordInput.setError("Enter your password"); return; }
-            loginButton.setEnabled(false);
-            new Thread(() -> {
-                long accountId = -1;
-                String error = "Email or password is incorrect.";
-                try (AccountStore store = new AccountStore(this)) {
-                    accountId = store.login(email, password);
-                    if (accountId > 0) store.startSession(accountId);
-                } catch (Exception e) { error = "Could not log in. Please try again."; }
-                final boolean success = accountId > 0;
-                final String message = error;
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) return;
-                    loginButton.setEnabled(true);
-                    if (success) {
-                        Intent intent = new Intent(this, HomeActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-                });
-            }).start();
+            AccountStore store = new AccountStore(this);
+            long id = store.login(email, password);
+            if (id < 0) {
+                store.close();
+                Toast.makeText(this, "Register first, then use the same email and password for this session.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            store.startSession(id);
+            store.close();
+            Intent intent = new Intent(this, HomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
         findViewById(R.id.register_button).setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));

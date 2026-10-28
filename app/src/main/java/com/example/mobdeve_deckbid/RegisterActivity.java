@@ -15,6 +15,14 @@ public class RegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        if (savedInstanceState == null) AccountStore.registrationPhoto = null;
+        showPhoto();
+        findViewById(R.id.register_upload_photo).setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, 502);
+        });
         EditText usernameInput = findViewById(R.id.username_input);
         EditText birthdayInput = findViewById(R.id.birthday_input);
         EditText emailInput = findViewById(R.id.email_input);
@@ -42,31 +50,48 @@ public class RegisterActivity extends Activity {
             if (birthday.isEmpty()) { birthdayInput.setError("Select your birthday"); return; }
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) { emailInput.setError("Enter a valid email address"); return; }
             if (password.length() < 8) { passwordInput.setError("Use at least 8 characters"); return; }
-            registerButton.setEnabled(false);
-            new Thread(() -> {
-                String error = null;
-                try (AccountStore store = new AccountStore(this)) {
-                    long id = store.register(username, birthday, email, password);
-                    store.startSession(id);
-                } catch (android.database.sqlite.SQLiteConstraintException e) {
-                    error = "That username or email is already registered.";
-                } catch (Exception e) { error = "Could not register. Please try again."; }
-                final String message = error;
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) return;
-                    registerButton.setEnabled(true);
-                    if (message == null) {
-                        Intent intent = new Intent(this, HomeActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-                });
-            }).start();
+            AccountStore store = new AccountStore(this);
+            long id = store.register(username, birthday, email, password);
+            store.startSession(id);
+            store.close();
+            Intent intent = new Intent(this, HomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
         findViewById(R.id.login_button).setOnClickListener(view -> {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
     }
+    private void showPhoto() {
+        android.widget.ImageView photo = findViewById(R.id.register_photo);
+        photo.setClipToOutline(true);
+        if (AccountStore.registrationPhoto != null) photo.setImageBitmap(AccountStore.registrationPhoto);
+        else photo.setImageResource(R.drawable.ic_nav_profile);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != 502 || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        findViewById(R.id.register_upload_photo).setEnabled(false);
+        findViewById(R.id.register_button).setEnabled(false);
+        new Thread(() -> {
+            boolean loaded;
+            try {
+                AccountStore.registrationPhoto = ProfileImages.load(this, data.getData());
+                loaded = true;
+            } catch (Exception e) { loaded = false; }
+            final boolean success = loaded;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                findViewById(R.id.register_upload_photo).setEnabled(true);
+                findViewById(R.id.register_button).setEnabled(true);
+                if (success) showPhoto();
+                else Toast.makeText(this, "Could not open that photo. Try another image.", Toast.LENGTH_LONG).show();
+            });
+        }).start();
+    }
+
 }
