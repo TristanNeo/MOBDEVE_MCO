@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197845506552",
+    "project_id": "mobdeve-deckbid",
+    "storage_bucket": "mobdeve-deckbid.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197845506552:android:e4364666c8ed7f95411e0d",
+        "android_client_info": {
+          "package_name": "com.example.mobdeve_deckbid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEh0XyiaZIQcqgSyGn48sSQR9z6GA_1sw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
