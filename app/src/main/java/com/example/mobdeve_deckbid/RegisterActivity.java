@@ -9,6 +9,16 @@ import android.widget.EditText;
 import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Locale;
+import android.content.Intent;
+import android.util.Log;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import java.util.Map;
+import java.util.HashMap;
 
 public class RegisterActivity extends Activity {
     @Override
@@ -102,4 +112,67 @@ public class RegisterActivity extends Activity {
         }).start();
     }
 
+    private void registerUser(String username, String birthday, String email, String password) {
+        if (username.trim().isEmpty() ||
+                birthday.trim().isEmpty() ||
+                email.trim().isEmpty() ||
+                password.isEmpty()) {
+            Log.w("DeckBidDB", "Complete all fields");
+            return;
+        }
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        auth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult result) {
+
+                        String uid = result.getUser().getUid();
+
+                        FirebaseFirestore db =
+                                FirebaseFirestore.getInstance();
+
+                        CollectionReference usersRef =
+                                db.collection("users");
+
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("username", username.trim());
+                        data.put("birthday", birthday.trim());
+                        data.put("email", email.trim());
+
+                        usersRef.document(uid).set(data)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+
+                                        Log.d("DeckBidDB", "User saved successfully");
+
+                                        Intent intent = new Intent(
+                                                RegisterActivity.this,
+                                                HomeActivity.class
+                                        );
+
+                                        intent.putExtra("username", username.trim());
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Log.w("DeckBidDB",
+                                                "Error saving profile", e);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.w("DeckBidDB",
+                                "Registration failed", e);
+                    }
+                });
+    }
 }

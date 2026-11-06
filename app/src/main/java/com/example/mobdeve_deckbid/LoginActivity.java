@@ -6,6 +6,14 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.content.Intent;
+import android.util.Log;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
 
 public class LoginActivity extends Activity {
     @Override
@@ -38,5 +46,61 @@ public class LoginActivity extends Activity {
             startActivity(new Intent(this, RegisterActivity.class));
             finish();
         });
+    }
+
+    private void loginUser(String email, String password) {
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        auth.signInWithEmailAndPassword(email.trim(), password)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult result) {
+
+                        String uid = result.getUser().getUid();
+
+                        FirebaseFirestore db =
+                                FirebaseFirestore.getInstance();
+
+                        db.collection("users").document(uid).get()
+                                .addOnSuccessListener(
+                                        new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot document) {
+
+                                                if (document.exists()) {
+
+                                                    String username =
+                                                            document.getString("username");
+
+                                                    Intent intent = new Intent(
+                                                            LoginActivity.this,
+                                                            HomeActivity.class
+                                                    );
+
+                                                    intent.putExtra("username", username);
+                                                    startActivity(intent);
+                                                    finish();
+
+                                                } else {
+                                                    Log.w("DeckBidDB", "Profile not found");
+                                                }
+                                            }
+                                        })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Log.w("DeckBidDB",
+                                                "Error retrieving profile", e);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.w("DeckBidDB", "Login failed", e);
+                    }
+                });
     }
 }
