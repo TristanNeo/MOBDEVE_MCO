@@ -78,12 +78,17 @@ public class AddCardActivity extends Activity {
                 set.getText().toString().trim(), game.getSelectedItem().toString(),
                 condition.getSelectedItem().toString(), artwork.getSelectedItemPosition());
         card.uri = photoUri;
-        if (!BinderStore.add(this, card)) {
-            Toast.makeText(this, "Could not save. Please try again.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Toast.makeText(this, "Card added to Binder", Toast.LENGTH_SHORT).show();
-        finish();
+        findViewById(R.id.save_card_button).setEnabled(false);
+        BinderStore.add(this, card).addOnCompleteListener(task -> {
+            if (isFinishing() || isDestroyed()) return;
+            findViewById(R.id.save_card_button).setEnabled(true);
+            if (!task.isSuccessful()) {
+                Toast.makeText(this, "Could not save: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                return;
+            }
+            Toast.makeText(this, "Card added to Binder", Toast.LENGTH_SHORT).show();
+            finish();
+        });
     }
 
     @Override
@@ -92,6 +97,7 @@ public class AddCardActivity extends Activity {
         if (requestCode == 10 && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try {
+                getContentResolver().takePersistableUriPermission(uri, data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 photoUri = uri.toString();
                 preview();
             } catch (SecurityException e) {

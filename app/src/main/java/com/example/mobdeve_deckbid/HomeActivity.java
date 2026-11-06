@@ -10,6 +10,8 @@ import android.widget.TextView;
 public class HomeActivity extends Activity {
 
     private AccountStore.User user;
+    private com.google.firebase.firestore.ListenerRegistration binderListener, auctionListener;
+    private boolean started, dataReady;
     private static final int PICK_PROFILE_PHOTO = 501;
     private TextView pageTitle;
     private TextView homeTab;
@@ -34,12 +36,30 @@ public class HomeActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try (AccountStore store = new AccountStore(this)) { user = store.current(); }
-        if (user == null) {
+        if (AccountStore.uid() == null) {
             startActivity(new Intent(this, EntryActivity.class));
             finish();
             return;
         }
+        setContentView(R.layout.activity_main);
+        AccountStore.loadProfile().addOnCompleteListener(task -> {
+            if (isFinishing() || isDestroyed()) return;
+            if (!task.isSuccessful()) {
+                AccountStore.logout(this);
+                android.widget.Toast.makeText(this, task.getException().getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                return;
+            }
+            initialize(savedInstanceState);
+        });
+    }
+
+    private void initialize(Bundle savedInstanceState) {
+        try (AccountStore store = new AccountStore(this)) { user = store.current(); }
+        if (user == null) return;
         setContentView(R.layout.activity_home);
 
         pageTitle = findViewById(R.id.page_title);
@@ -70,6 +90,41 @@ public class HomeActivity extends Activity {
         }
 
         showTab(selectedTab);
+        com.google.android.gms.tasks.Tasks.whenAll(BinderStore.initialize(), AuctionStore.initialize(this))
+                .addOnCompleteListener(task -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!task.isSuccessful()) android.widget.Toast.makeText(this,
+                            "Could not prepare data: " + task.getException().getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                    dataReady = true;
+                    startListening();
+                });
+        if (started) clockHandler.post(updateClocks);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        started = true;
+        startListening();
+    }
+
+    private void startListening() {
+        if (!started || !dataReady || user == null || !user.id.equals(AccountStore.uid())) return;
+        if (binderListener == null) binderListener = BinderStore.listen(this, () -> {
+            binderController.refresh();
+            auctionsController.refresh();
+        });
+        if (auctionListener == null) auctionListener = AuctionStore.listen(this, () -> auctionsController.refresh());
+        binderController.refresh();
+        auctionsController.refresh();
+    }
+
+    @Override
+    protected void onStop() {
+        started = false;
+        if (binderListener != null) { binderListener.remove(); binderListener = null; }
+        if (auctionListener != null) { auctionListener.remove(); auctionListener = null; }
+        super.onStop();
     }
 
     public void selectTab(View view) {
@@ -189,8 +244,8 @@ public class HomeActivity extends Activity {
         AccountStore.logout(this);
         Intent intent = new Intent(HomeActivity.this, EntryActivity.class);
         intent.setFlags(
-                Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION
         );
         startActivity(intent);
         finish();
@@ -226,23 +281,20 @@ public class HomeActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != PICK_PROFILE_PHOTO || resultCode != RESULT_OK || data == null || data.getData() == null || user == null) return;
-        final long accountId = user.id;
+        final String accountId = user.id;
         findViewById(R.id.upload_photo).setEnabled(false);
-        new Thread(() -> {
-            android.graphics.Bitmap photo = null;
-            boolean saved = false;
-            try (AccountStore store = new AccountStore(this)) {
-                photo = ProfileImages.load(this, data.getData());
-                saved = store.savePhoto(accountId, photo);
-            } catch (Exception e) { saved = false; }
-            final boolean success = saved;
-            runOnUiThread(() -> {
+        try {
+            android.graphics.Bitmap photo = ProfileImages.load(this, data.getData());
+            new AccountStore(this).savePhoto(accountId, photo).addOnCompleteListener(task -> {
                 if (isFinishing() || isDestroyed()) return;
                 findViewById(R.id.upload_photo).setEnabled(true);
-                if (success) refreshProfile();
-                else android.widget.Toast.makeText(this, "Could not save that photo. Try another image.", android.widget.Toast.LENGTH_LONG).show();
+                if (task.isSuccessful()) refreshProfile();
+                else android.widget.Toast.makeText(this, "Could not save photo: " + task.getException().getMessage(), android.widget.Toast.LENGTH_LONG).show();
             });
-        }).start();
+        } catch (Exception e) {
+            findViewById(R.id.upload_photo).setEnabled(true);
+            android.widget.Toast.makeText(this, "Could not open photo: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+        }
     }
 
 }

@@ -7,6 +7,22 @@ import android.net.Uri;
 import java.io.InputStream;
 
 public class ProfileImages {
+    public static String encode(Bitmap bitmap) throws Exception {
+        if (bitmap == null) return "";
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bytes);
+        if (bytes.size() > 500000) throw new Exception("Choose a smaller photo.");
+        return android.util.Base64.encodeToString(bytes.toByteArray(), android.util.Base64.NO_WRAP);
+    }
+
+    public static Bitmap decode(String encoded) {
+        if (encoded == null || encoded.isEmpty()) return null;
+        try {
+            byte[] bytes = android.util.Base64.decode(encoded, android.util.Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        } catch (IllegalArgumentException e) { return null; }
+    }
+
     public static Bitmap load(Context context, Uri uri) throws Exception {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;

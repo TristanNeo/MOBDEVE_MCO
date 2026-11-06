@@ -9,16 +9,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Locale;
-import android.content.Intent;
-import android.util.Log;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import java.util.Map;
-import java.util.HashMap;
 
 public class RegisterActivity extends Activity {
     @Override
@@ -60,14 +50,23 @@ public class RegisterActivity extends Activity {
             if (birthday.isEmpty()) { birthdayInput.setError("Select your birthday"); return; }
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) { emailInput.setError("Enter a valid email address"); return; }
             if (password.length() < 8) { passwordInput.setError("Use at least 8 characters"); return; }
-            AccountStore store = new AccountStore(this);
-            long id = store.register(username, birthday, email, password);
-            store.startSession(id);
-            store.close();
-            Intent intent = new Intent(this, HomeActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-            finish();
+            registerButton.setEnabled(false);
+            findViewById(R.id.login_button).setEnabled(false);
+            findViewById(R.id.register_upload_photo).setEnabled(false);
+            new AccountStore(this).register(username, birthday, email, password).addOnCompleteListener(task -> {
+                if (isFinishing() || isDestroyed()) return;
+                registerButton.setEnabled(true);
+                findViewById(R.id.login_button).setEnabled(true);
+                findViewById(R.id.register_upload_photo).setEnabled(true);
+                if (!task.isSuccessful()) {
+                    Toast.makeText(this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
+                finish();
+            });
         });
         findViewById(R.id.login_button).setOnClickListener(view -> {
             startActivity(new Intent(this, LoginActivity.class));
@@ -95,84 +94,14 @@ public class RegisterActivity extends Activity {
         if (requestCode != 502 || resultCode != RESULT_OK || data == null || data.getData() == null) return;
         findViewById(R.id.register_upload_photo).setEnabled(false);
         findViewById(R.id.register_button).setEnabled(false);
-        new Thread(() -> {
-            boolean loaded;
-            try {
-                AccountStore.registrationPhoto = ProfileImages.load(this, data.getData());
-                loaded = true;
-            } catch (Exception e) { loaded = false; }
-            final boolean success = loaded;
-            runOnUiThread(() -> {
-                if (isFinishing() || isDestroyed()) return;
-                findViewById(R.id.register_upload_photo).setEnabled(true);
-                findViewById(R.id.register_button).setEnabled(true);
-                if (success) showPhoto();
-                else Toast.makeText(this, "Could not open that photo. Try another image.", Toast.LENGTH_LONG).show();
-            });
-        }).start();
-    }
-
-    private void registerUser(String username, String birthday, String email, String password) {
-        if (username.trim().isEmpty() ||
-                birthday.trim().isEmpty() ||
-                email.trim().isEmpty() ||
-                password.isEmpty()) {
-            Log.w("DeckBidDB", "Complete all fields");
-            return;
+        try {
+            AccountStore.registrationPhoto = ProfileImages.load(this, data.getData());
+            showPhoto();
+        } catch (Exception e) {
+            Toast.makeText(this, "Could not open that photo. Try another image.", Toast.LENGTH_LONG).show();
         }
-
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-        auth.createUserWithEmailAndPassword(email.trim(), password)
-                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                    @Override
-                    public void onSuccess(AuthResult result) {
-
-                        String uid = result.getUser().getUid();
-
-                        FirebaseFirestore db =
-                                FirebaseFirestore.getInstance();
-
-                        CollectionReference usersRef =
-                                db.collection("users");
-
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("username", username.trim());
-                        data.put("birthday", birthday.trim());
-                        data.put("email", email.trim());
-
-                        usersRef.document(uid).set(data)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-
-                                        Log.d("DeckBidDB", "User saved successfully");
-
-                                        Intent intent = new Intent(
-                                                RegisterActivity.this,
-                                                HomeActivity.class
-                                        );
-
-                                        intent.putExtra("username", username.trim());
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(Exception e) {
-                                        Log.w("DeckBidDB",
-                                                "Error saving profile", e);
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.w("DeckBidDB",
-                                "Registration failed", e);
-                    }
-                });
+        findViewById(R.id.register_upload_photo).setEnabled(true);
+        findViewById(R.id.register_button).setEnabled(true);
     }
+
 }

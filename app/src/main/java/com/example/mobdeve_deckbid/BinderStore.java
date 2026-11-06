@@ -11,7 +11,83 @@ import java.util.Locale;
 
 public class BinderStore {
     private static final ArrayList<Card> addedCards = new ArrayList<>();
-    public static void reset() { addedCards.clear(); }
+    private static String owner;
+    public static void reset() { addedCards.clear(); owner = null; }
+
+    private static void checkOwner() {
+        String uid = AccountStore.uid();
+        if (!java.util.Objects.equals(owner, uid)) {
+            addedCards.clear();
+            owner = uid;
+        }
+    }
+
+    public static com.google.firebase.firestore.ListenerRegistration listen(android.app.Activity activity, Runnable changed) {
+        checkOwner();
+        String uid = owner;
+        if (uid == null) return () -> { };
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(uid)
+                .collection("binder").addSnapshotListener((snapshot, error) -> {
+                    if (!uid.equals(AccountStore.uid()) || activity.isFinishing() || activity.isDestroyed()) return;
+                    if (error != null) {
+                        android.widget.Toast.makeText(activity, "Could not load Binder: " + error.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    checkOwner();
+                    addedCards.clear();
+                    if (snapshot != null) for (com.google.firebase.firestore.DocumentSnapshot doc : snapshot.getDocuments()) {
+                        addedCards.add(read(doc));
+                    }
+                    changed.run();
+                });
+    }
+
+    public static Card read(com.google.firebase.firestore.DocumentSnapshot doc) {
+        Card card = new Card(doc.getId(), text(doc, "name"), text(doc, "set"), text(doc, "game"), text(doc, "condition"),
+                doc.getLong("artwork") == null ? 0 : doc.getLong("artwork").intValue());
+        card.uri = text(doc, "photo");
+        card.demo = Boolean.TRUE.equals(doc.getBoolean("demo"));
+        card.average = doc.getDouble("average") == null ? 0 : doc.getDouble("average");
+        card.change = doc.getDouble("change") == null ? 0 : doc.getDouble("change");
+        return card;
+    }
+
+    public static com.google.android.gms.tasks.Task<Void> initialize() {
+        String uid = AccountStore.uid();
+        if (uid == null) return com.google.android.gms.tasks.Tasks.forException(new Exception("Please sign in again."));
+        com.google.firebase.firestore.DocumentReference user = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("users").document(uid);
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance().runTransaction(transaction -> {
+            com.google.firebase.firestore.DocumentSnapshot profile = transaction.get(user);
+            if (Boolean.TRUE.equals(profile.getBoolean("binderInitialized"))) return (Void) null;
+            String[] sets = {"Scarlet & Violet · 076/165", "OP02-013 · Alternate Art", "LOB-119 · Spell Card", "Mirrodin · Artifact"};
+            double[] averages = {1250, 8500, 2300, 650};
+            double[] changes = {8.4, 5.2, -3.1, 2.6};
+            java.util.ArrayList<com.google.firebase.firestore.DocumentSnapshot> existing = new java.util.ArrayList<>();
+            for (int i = 0; i < 4; i++) existing.add(transaction.get(user.collection("binder").document("demo_" + i)));
+            for (int i = 0; i < 4; i++) {
+                if (existing.get(i).exists()) continue;
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", ARTWORK[i]);
+                data.put("set", sets[i]);
+                data.put("game", GAMES[i]);
+                data.put("condition", "Ungraded");
+                data.put("artwork", i);
+                data.put("photo", "");
+                data.put("demo", true);
+                data.put("average", averages[i]);
+                data.put("change", changes[i]);
+                transaction.set(existing.get(i).getReference(), data);
+            }
+            transaction.update(user, "binderInitialized", true);
+            return (Void) null;
+        });
+    }
+
+    private static String text(com.google.firebase.firestore.DocumentSnapshot doc, String key) {
+        String value = doc.getString(key);
+        return value == null ? "" : value;
+    }
     public static final String[] CONDITIONS = {"Ungraded", "PSA 9", "PSA 10"};
     public static final String[] GAMES = {"Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
     public static final String[] ARTWORK = {"Snorlax ex", "Portgas D. Ace", "Pot of Greed", "Timesifter"};
@@ -35,24 +111,26 @@ public class BinderStore {
     }
 
     public static ArrayList<Card> load(Context context) {
-        ArrayList<Card> cards = new ArrayList<>();
-        String[] sets = {"Scarlet & Violet · 076/165", "OP02-013 · Alternate Art", "LOB-119 · Spell Card", "Mirrodin · Artifact"};
-        double[] averages = {1250, 8500, 2300, 650};
-        double[] changes = {8.4, 5.2, -3.1, 2.6};
-        for (int i = 0; i < 4; i++) {
-            Card c = new Card("demo_" + i, ARTWORK[i], sets[i], GAMES[i], "Ungraded", i);
-            c.demo = true;
-            c.average = averages[i];
-            c.change = changes[i];
-            cards.add(c);
-        }
-        cards.addAll(addedCards);
-        return cards;
+        checkOwner();
+        return new ArrayList<>(addedCards);
     }
 
-    public static boolean add(Context context, Card card) {
-        addedCards.add(card);
-        return true;
+    public static com.google.android.gms.tasks.Task<Void> add(Context context, Card card) {
+        String uid = AccountStore.uid();
+        if (uid == null) return com.google.android.gms.tasks.Tasks.forException(new Exception("Please sign in again."));
+        final String photo;
+        try {
+            photo = card.uri.isEmpty() ? "" : ProfileImages.encode(ProfileImages.load(context, Uri.parse(card.uri)));
+        } catch (Exception e) { return com.google.android.gms.tasks.Tasks.forException(e); }
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("name", card.name);
+        data.put("set", card.set);
+        data.put("game", card.game);
+        data.put("condition", card.condition);
+        data.put("artwork", card.artwork);
+        data.put("photo", photo);
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(uid)
+                .collection("binder").document(card.id).set(data);
     }
 
     public static String money(double amount) {
@@ -71,6 +149,11 @@ public class BinderStore {
         view.setImageResource(IMAGES[Math.max(0, Math.min(3, card.artwork))]);
         view.setContentDescription(card.name);
         if (card.uri.isEmpty()) return;
+        if (!card.uri.startsWith("content:") && !card.uri.startsWith("file:")) {
+            Bitmap bitmap = ProfileImages.decode(card.uri);
+            if (bitmap != null) view.setImageBitmap(bitmap);
+            return;
+        }
         try {
             Uri uri = Uri.parse(card.uri);
             BitmapFactory.Options options = new BitmapFactory.Options();

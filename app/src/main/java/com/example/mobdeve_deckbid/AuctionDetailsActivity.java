@@ -19,6 +19,9 @@ import java.util.Locale;
 
 public class AuctionDetailsActivity extends Activity {
     private AuctionItem auction;
+    private String auctionId;
+    private boolean busy;
+    private com.google.firebase.firestore.ListenerRegistration listener;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable ticker = new Runnable() {
         @Override
@@ -32,27 +35,49 @@ public class AuctionDetailsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_auction_details);
-        auction = AuctionStore.find(this, getIntent().getStringExtra("auction_id"));
-        if (auction == null) {
-            finish();
-            return;
-        }
+        auctionId = getIntent().getStringExtra("auction_id");
+        if (AccountStore.uid() == null || auctionId == null) { finish(); return; }
+        auction = AuctionStore.find(this, auctionId);
         findViewById(R.id.auction_back).setOnClickListener(v -> finish());
         findViewById(R.id.auction_save).setOnClickListener(v -> {
-            auction.saved = !auction.saved;
-            persist();
+            if (auction == null || busy) return;
+            busy = true;
+            updateStatus();
+            AuctionStore.setSaved(auctionId, !auction.saved).addOnCompleteListener(task -> {
+                if (isFinishing() || isDestroyed()) return;
+                busy = false;
+                if (!task.isSuccessful()) showError(task.getException());
+                if (auction != null) render();
+            });
         });
         findViewById(R.id.auction_place_bid).setOnClickListener(v -> bidDialog(false));
         findViewById(R.id.auction_auto_bid).setOnClickListener(v -> bidDialog(true));
-        AuctionStore.image(this, (ImageView) findViewById(R.id.detail_auction_image), auction);
-        render();
+        findViewById(R.id.auction_place_bid).setEnabled(auction != null);
+        findViewById(R.id.auction_auto_bid).setEnabled(auction != null);
+        if (auction != null) render();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (AccountStore.uid() == null || auctionId == null) return;
+        listener = AuctionStore.listen(this, () -> {
+            auction = AuctionStore.find(this, auctionId);
+            if (auction != null) render();
+        });
+    }
+
+    @Override
+    protected void onStop() {
+        if (listener != null) { listener.remove(); listener = null; }
+        super.onStop();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         handler.removeCallbacks(ticker);
-        if (auction != null) handler.post(ticker);
+        handler.post(ticker);
     }
 
     @Override
@@ -62,6 +87,7 @@ public class AuctionDetailsActivity extends Activity {
     }
 
     private void render() {
+        AuctionStore.image(this, (ImageView) findViewById(R.id.detail_auction_image), auction);
         label(R.id.detail_auction_name, auction.name);
         label(R.id.detail_auction_game, auction.game);
         label(R.id.detail_auction_grade, auction.condition);
@@ -89,7 +115,7 @@ public class AuctionDetailsActivity extends Activity {
         history.removeAllViews();
         historyRow(history, "Bidder", "Amount", "Time", true);
         for (AuctionItem.Bid bid : auction.history) {
-            historyRow(history, "You".equals(bid.bidder) ? AccountStore.username(this) : bid.bidder, AuctionStore.money(bid.amount), new SimpleDateFormat("MMM d, HH:mm", Locale.US).format(new Date(bid.time)), false);
+            historyRow(history, bid.bidder, AuctionStore.money(bid.amount), new SimpleDateFormat("MMM d, HH:mm", Locale.US).format(new Date(bid.time)), false);
         }
         updateStatus();
     }
@@ -107,14 +133,16 @@ public class AuctionDetailsActivity extends Activity {
         findViewById(R.id.detail_auction_status).setVisibility(status.isEmpty() ? View.GONE : View.VISIBLE);
         Button bid = findViewById(R.id.auction_place_bid);
         Button auto = findViewById(R.id.auction_auto_bid);
-        bid.setEnabled(active && !auction.isLeading());
+        bid.setEnabled(active && !busy && !auction.isLeading());
         bid.setAlpha(bid.isEnabled() ? 1f : 0.5f);
-        auto.setEnabled(active);
-        auto.setAlpha(active ? 1f : 0.5f);
+        auto.setEnabled(active && !busy);
+        auto.setAlpha(auto.isEnabled() ? 1f : 0.5f);
+        findViewById(R.id.auction_save).setEnabled(!busy);
         auto.setText(auction.autoBidMax > 0 ? "Edit Auto-Bid" : "Auto-Bid");
     }
 
     private void bidDialog(boolean automatic) {
+        if (auction == null || busy) return;
         View form = getLayoutInflater().inflate(R.layout.dialog_auction_bid, null);
         EditText amount = form.findViewById(R.id.bid_amount);
         long minimum = automatic && auction.isLeading() ? auction.currentBid : auction.minimumBid();
@@ -130,8 +158,14 @@ public class AuctionDetailsActivity extends Activity {
                 .setPositiveButton(automatic ? "Save maximum" : "Confirm bid", null);
         if (automatic && auction.autoBidMax > 0) {
             builder.setNeutralButton("Turn off", (dialog, which) -> {
-                auction.autoBidMax = 0;
-                persist();
+                busy = true;
+                updateStatus();
+                AuctionStore.clearAutoBid(auctionId).addOnCompleteListener(task -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    busy = false;
+                    if (!task.isSuccessful()) showError(task.getException());
+                    if (auction != null) render();
+                });
             });
         }
         AlertDialog dialog = builder.create();
@@ -143,31 +177,34 @@ public class AuctionDetailsActivity extends Activity {
                 amount.setError("Enter a valid amount in whole pesos");
                 return;
             }
-            try {
-                if (automatic) auction.setAutoBid(value, System.currentTimeMillis());
-                else auction.placeBid(value, "You", System.currentTimeMillis());
-            } catch (IllegalArgumentException e) {
-                amount.setError(e.getMessage());
-                return;
-            }
-            if (persist()) {
+            if (busy) return;
+            busy = true;
+            updateStatus();
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(false);
+            if (dialog.getButton(AlertDialog.BUTTON_NEUTRAL) != null) dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+            dialog.setCancelable(false);
+            AuctionStore.bid(this, auctionId, value, automatic).addOnCompleteListener(task -> {
+                if (isFinishing() || isDestroyed()) return;
+                busy = false;
+                if (auction != null) render();
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(true);
+                if (dialog.getButton(AlertDialog.BUTTON_NEUTRAL) != null) dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+                dialog.setCancelable(true);
+                if (!task.isSuccessful()) {
+                    amount.setError(task.getException().getMessage());
+                    return;
+                }
                 Toast.makeText(this, automatic ? "Auto-bid maximum saved" : "Bid placed", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
-            }
+            });
         }));
         dialog.show();
     }
 
-    private boolean persist() {
-        if (!AuctionStore.save(this, auction)) {
-            Toast.makeText(this, "Could not save. Please try again.", Toast.LENGTH_SHORT).show();
-            AuctionItem previous = AuctionStore.find(this, auction.id);
-            if (previous != null) auction = previous;
-            render();
-            return false;
-        }
-        render();
-        return true;
+    private void showError(Exception e) {
+        Toast.makeText(this, "Could not save: " + e.getMessage(), Toast.LENGTH_LONG).show();
     }
 
     private void summaryRow(LinearLayout parent, String title, String value) {

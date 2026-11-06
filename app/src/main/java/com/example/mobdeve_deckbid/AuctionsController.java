@@ -172,9 +172,13 @@ public class AuctionsController {
         heart.setImageResource(a.saved ? R.drawable.auction_heart_saved : R.drawable.auction_heart);
         heart.setContentDescription(a.saved ? "Remove from watchlist" : "Save to watchlist");
         heart.setOnClickListener(v -> {
-            a.saved = !a.saved;
-            if (!AuctionStore.save(activity, a)) Toast.makeText(activity, "Could not save. Try again.", Toast.LENGTH_SHORT).show();
-            refresh();
+            heart.setEnabled(false);
+            AuctionStore.setSaved(a.id, !a.saved).addOnCompleteListener(task -> {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                heart.setEnabled(true);
+                if (!task.isSuccessful()) Toast.makeText(activity, "Could not save: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                refresh();
+            });
         });
         view.setOnClickListener(v -> {
             Intent intent = new Intent(activity, AuctionDetailsActivity.class);

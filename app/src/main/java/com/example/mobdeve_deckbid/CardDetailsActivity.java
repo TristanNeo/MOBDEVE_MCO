@@ -20,13 +20,23 @@ public class CardDetailsActivity extends Activity {
         super.onCreate(state);
         setContentView(R.layout.activity_card_details);
         String id = getIntent().getStringExtra("card_id");
-        for (BinderStore.Card candidate : BinderStore.load(this)) {
-            if (candidate.id.equals(id)) card = candidate;
-        }
-        if (card == null) {
-            finish();
-            return;
-        }
+        findViewById(R.id.back_button).setOnClickListener(v -> finish());
+        String uid = AccountStore.uid();
+        if (uid == null || id == null) { finish(); return; }
+        com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(uid)
+                .collection("binder").document(id).get(com.google.firebase.firestore.Source.SERVER).addOnCompleteListener(task -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!uid.equals(AccountStore.uid()) || !task.isSuccessful() || !task.getResult().exists()) {
+                        android.widget.Toast.makeText(this, "Could not load this card. Please try again.", android.widget.Toast.LENGTH_LONG).show();
+                        finish();
+                        return;
+                    }
+                    card = BinderStore.read(task.getResult());
+                    initialize(state);
+                });
+    }
+
+    private void initialize(Bundle state) {
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
         BinderStore.image(this, (ImageView) findViewById(R.id.detail_image), card);
         ((TextView) findViewById(R.id.detail_name)).setText(card.name);
