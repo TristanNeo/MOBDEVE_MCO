@@ -23,14 +23,12 @@ public class AuctionStore {
     private static final HashSet<String> bidding = new HashSet<>();
     private static final Map<String, String> attempted = new HashMap<>();
     private static String owner;
+    public static final long MAX_DURATION = 7L * 24 * 60 * 60 * 1000;
     public static void reset() {
         auctions.clear(); preferences.clear(); bidding.clear(); attempted.clear(); owner = null;
     }
     private static void checkOwner() {
-        if (!java.util.Objects.equals(owner, AccountStore.uid())) {
-            reset();
-            owner = AccountStore.uid();
-        }
+        if (!java.util.Objects.equals(owner, AccountStore.uid())) { reset(); owner = AccountStore.uid(); }
     }
     public static final String[] CATEGORIES = {"All games", "Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
     public static final String[] CONDITIONS = {"All conditions", "Ungraded", "PSA 9", "PSA 10"};
@@ -39,25 +37,44 @@ public class AuctionStore {
 
     public static ArrayList<AuctionItem> load(Context context) {
         checkOwner();
-        return new ArrayList<>(auctions);
+        ArrayList<AuctionItem> result = new ArrayList<>();
+        long now = System.currentTimeMillis();
+        for (AuctionItem a : auctions) if (a.isOwned() || !a.isPending(now)) result.add(a);
+        return result;
     }
-
     public static AuctionItem find(Context context, String id) {
         for (AuctionItem a : load(context)) if (a.id.equals(id)) return a;
         return null;
     }
-
-    public static Task<Void> initialize(Context context) {
-        ArrayList<AuctionItem> samples = samples();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        return db.runTransaction(transaction -> {
-            ArrayList<DocumentSnapshot> docs = new ArrayList<>();
-            for (AuctionItem a : samples) docs.add(transaction.get(db.collection("auctions").document(a.id)));
-            for (int i = 0; i < samples.size(); i++) {
-                if (!docs.get(i).exists()) transaction.set(docs.get(i).getReference(), data(context, samples.get(i)));
-            }
-            return (Void) null;
-        });
+    public static ArrayList<AuctionItem> matching(Context context, BinderStore.Card card, boolean completed) {
+        ArrayList<AuctionItem> result = new ArrayList<>();
+        String key = AuctionItem.cardKey(card.game, card.name, card.set, card.condition);
+        long now = System.currentTimeMillis();
+        for (AuctionItem a : load(context)) {
+            if (!key.equals(AuctionItem.cardKey(a.game, a.name, a.set, a.condition))) continue;
+            if (completed ? a.endsAt <= now && !a.history.isEmpty() : a.isActive(now)) result.add(a);
+        }
+        result.sort(completed ? (a, b) -> Long.compare(b.currentBid, a.currentBid)
+                : (a, b) -> Long.compare(a.endsAt, b.endsAt));
+        return result;
+    }
+    public static ArrayList<AuctionItem> catalog(Context context, String game, String condition) {
+        Map<String, AuctionItem> unique = new java.util.LinkedHashMap<>();
+        for (AuctionItem a : load(context)) {
+            if (a.isPending(System.currentTimeMillis()) || !a.game.equals(game) || !a.condition.equals(condition)) continue;
+            String key = AuctionItem.cardKey(a.game, a.name, a.set, a.condition);
+            unique.put(key, a);
+        }
+        ArrayList<AuctionItem> result = new ArrayList<>(unique.values());
+        result.sort((a, b) -> a.name.compareToIgnoreCase(b.name));
+        return result;
+    }
+    public static String average(Context context, BinderStore.Card card) {
+        ArrayList<AuctionItem> completed = matching(context, card, true);
+        if (completed.isEmpty()) return "No sales yet";
+        double total = 0;
+        for (AuctionItem a : completed) total += a.currentBid;
+        return BinderStore.money(total / completed.size());
     }
 
     public static ListenerRegistration listen(Activity activity, Runnable changed) {
@@ -76,22 +93,67 @@ public class AuctionStore {
                 if (a != null) { applyPreferences(a); auctions.add(a); }
             }
             changed.run();
-            if (snapshot != null && !snapshot.getMetadata().isFromCache() && !snapshot.getMetadata().hasPendingWrites())
-                runAutomaticBids(activity);
+            if (snapshot != null && !snapshot.getMetadata().isFromCache() && !snapshot.getMetadata().hasPendingWrites()) runAutomaticBids(activity);
         });
         ListenerRegistration personal = db.collection("users").document(uid).collection("auctionSettings")
                 .addSnapshotListener(MetadataChanges.INCLUDE, (snapshot, error) -> {
                     if (!uid.equals(AccountStore.uid()) || activity.isFinishing() || activity.isDestroyed()) return;
                     if (error != null) { showError(activity, error); return; }
-                    checkOwner();
                     preferences.clear();
                     if (snapshot != null) for (DocumentSnapshot doc : snapshot.getDocuments()) preferences.put(doc.getId(), doc.getData());
                     for (AuctionItem a : auctions) applyPreferences(a);
                     changed.run();
-                    if (snapshot != null && !snapshot.getMetadata().isFromCache() && !snapshot.getMetadata().hasPendingWrites())
-                        runAutomaticBids(activity);
+                    if (snapshot != null && !snapshot.getMetadata().isFromCache() && !snapshot.getMetadata().hasPendingWrites()) runAutomaticBids(activity);
                 });
         return () -> { shared.remove(); personal.remove(); };
+    }
+
+    public static Task<Void> create(Context context, String cardId, long starting, long increment, long start, long duration, String notes) {
+        String uid = AccountStore.uid();
+        if (uid == null) return Tasks.forException(new Exception("Please sign in again."));
+        if (starting < 1 || starting > 100000000 || increment < 1 || increment > 100000000)
+            return Tasks.forException(new Exception("Use whole-peso bids and increments between ₱1 and ₱100,000,000."));
+        if (duration < 3600000L || duration > MAX_DURATION)
+            return Tasks.forException(new Exception("Duration must be from 1 hour to 7 days."));
+        if (start < System.currentTimeMillis() - 60000L)
+            return Tasks.forException(new Exception("Choose a start time in the future or Start immediately."));
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference binderRef = db.collection("users").document(uid).collection("binder").document(cardId);
+        DocumentReference ref = db.collection("auctions").document("listing_" + java.util.UUID.randomUUID());
+        return db.runTransaction(transaction -> {
+            DocumentSnapshot doc = transaction.get(binderRef);
+            DocumentSnapshot profile = transaction.get(db.collection("users").document(uid));
+            if (!uid.equals(AccountStore.uid()) || !doc.exists() || Boolean.TRUE.equals(doc.getBoolean("demo")))
+                throw new IllegalArgumentException("This card is not available in your Binder.");
+            BinderStore.Card card = BinderStore.read(doc);
+            if (!card.auctionId.isEmpty()) {
+                AuctionItem previous = read(context, transaction.get(db.collection("auctions").document(card.auctionId)));
+                if (previous != null && (previous.endsAt > System.currentTimeMillis() || !previous.history.isEmpty()))
+                    throw new IllegalArgumentException("This card is already scheduled, being auctioned, or sold.");
+            }
+            if (start < System.currentTimeMillis() - 60000L) throw new IllegalArgumentException("The selected start time has passed.");
+            Map<String, Object> data = new HashMap<>();
+            data.put("version", 2);
+            data.put("ownerUid", uid);
+            data.put("binderId", card.id);
+            data.put("catalogId", card.catalogId);
+            data.put("name", card.name);
+            data.put("set", card.set);
+            data.put("game", card.game);
+            data.put("condition", card.condition);
+            data.put("photo", card.uri);
+            data.put("seller", text(profile, "username"));
+            data.put("notes", notes.trim());
+            data.put("starting", starting);
+            data.put("current", starting);
+            data.put("increment", increment);
+            data.put("start", start);
+            data.put("end", Math.addExact(start, duration));
+            data.put("history", new ArrayList<>());
+            transaction.set(ref, data);
+            transaction.update(binderRef, "auctionId", ref.getId());
+            return (Void) null;
+        });
     }
 
     private static void applyPreferences(AuctionItem a) {
@@ -136,6 +198,7 @@ public class AuctionStore {
             if (username == null || username.trim().isEmpty()) throw new IllegalArgumentException("Your account profile is missing. Please sign in again.");
             if (!uid.equals(AccountStore.uid())) throw new IllegalArgumentException("Please sign in again.");
             if (latest == null) throw new IllegalArgumentException("Auction not found.");
+            if (uid.equals(latest.ownerUid)) throw new IllegalArgumentException("You cannot bid on your own auction.");
             long now = System.currentTimeMillis();
             long maximum = number(settings.get("auto"));
             boolean leading = !latest.history.isEmpty() && uid.equals(latest.history.get(0).uid);
@@ -152,10 +215,8 @@ public class AuctionStore {
                 newBid.uid = uid;
                 latest.history.add(0, newBid);
                 latest.currentBid = placed;
-                if (latest.endsAt - now <= 300000L) latest.endsAt += 300000L;
                 Map<String, Object> update = new HashMap<>();
                 update.put("current", latest.currentBid);
-                update.put("end", latest.endsAt);
                 update.put("history", history(latest));
                 transaction.update(auctionRef, update);
             }
@@ -169,7 +230,7 @@ public class AuctionStore {
 
     private static void runAutomaticBids(Activity activity) {
         for (AuctionItem a : new ArrayList<>(auctions)) {
-            if (!a.isActive(System.currentTimeMillis()) || a.isLeading() || a.autoBidMax < a.minimumBid()) continue;
+            if (a.isOwned() || !a.isActive(System.currentTimeMillis()) || a.isLeading() || a.autoBidMax < a.minimumBid()) continue;
             String version = a.currentBid + ":" + a.history.size() + ":" + a.autoBidMax;
             if (bidding.contains(a.id) || version.equals(attempted.get(a.id))) continue;
             String uid = AccountStore.uid();
@@ -195,22 +256,17 @@ public class AuctionStore {
         String value = doc.getString(field);
         return value == null ? "" : value;
     }
-
     private static AuctionItem read(Context context, DocumentSnapshot doc) {
-        if (!doc.exists()) return null;
+        if (!doc.exists() || number(doc.get("version")) != 2 || text(doc, "ownerUid").isEmpty()) return null;
         AuctionItem a = new AuctionItem();
         a.id = doc.getId();
-        a.name = text(doc, "name");
-        a.game = text(doc, "game");
-        a.condition = text(doc, "condition");
-        a.seller = text(doc, "seller");
-        a.image = context.getResources().getIdentifier(text(doc, "image"), "drawable", context.getPackageName());
-        if (a.image == 0) a.image = R.drawable.card_pokemon;
-        a.startingBid = number(doc.get("starting"));
-        a.increment = number(doc.get("increment"));
-        a.currentBid = number(doc.get("current"));
-        a.startsAt = number(doc.get("start"));
-        a.endsAt = number(doc.get("end"));
+        a.name = text(doc, "name"); a.set = text(doc, "set");
+        a.game = text(doc, "game"); a.condition = text(doc, "condition");
+        a.seller = text(doc, "seller"); a.ownerUid = text(doc, "ownerUid");
+        a.binderId = text(doc, "binderId"); a.photo = text(doc, "photo");
+        a.catalogId = text(doc, "catalogId"); a.notes = text(doc, "notes");
+        a.startingBid = number(doc.get("starting")); a.increment = number(doc.get("increment"));
+        a.currentBid = number(doc.get("current")); a.startsAt = number(doc.get("start")); a.endsAt = number(doc.get("end"));
         Object raw = doc.get("history");
         if (raw instanceof List<?>) for (Object entry : (List<?>) raw) {
             if (!(entry instanceof Map<?, ?>)) continue;
@@ -221,86 +277,38 @@ public class AuctionStore {
         }
         return a;
     }
-
     private static List<Map<String, Object>> history(AuctionItem a) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (AuctionItem.Bid bid : a.history) {
             Map<String, Object> value = new HashMap<>();
-            value.put("bidder", bid.bidder);
-            value.put("uid", bid.uid);
-            value.put("amount", bid.amount);
-            value.put("time", bid.time);
+            value.put("bidder", bid.bidder); value.put("uid", bid.uid);
+            value.put("amount", bid.amount); value.put("time", bid.time);
             result.add(value);
         }
         return result;
     }
-
-    private static Map<String, Object> data(Context context, AuctionItem a) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", a.name);
-        data.put("game", a.game);
-        data.put("condition", a.condition);
-        data.put("seller", a.seller);
-        data.put("image", context.getResources().getResourceEntryName(a.image));
-        data.put("starting", a.startingBid);
-        data.put("increment", a.increment);
-        data.put("current", a.currentBid);
-        data.put("start", a.startsAt);
-        data.put("end", a.endsAt);
-        data.put("history", history(a));
-        return data;
-    }
-
-    private static ArrayList<AuctionItem> samples() {
-        long seedTime = System.currentTimeMillis();
-        String[] names = {"Mega Greninja ex", "Charizard ex", "Blaziken", "Furret", "Giratina V", "Portgas D. Ace", "Monkey D. Luffy", "Sabo", "Izo", "Nami", "Dragon Master Magia", "Chaos Emperor Dragon", "Legendary Fire King Ponix", "Red-Eyes Darkness Metal Dragon", "Honest", "Thornscape Battlemage", "Clive, Ifrit's Dominant", "Endurance", "Firion, Wild Rose Warrior", "Bofur, Reliable Guardian"};
-        int[] images = {R.drawable.pokemon1, R.drawable.pokemon2, R.drawable.pokemon3, R.drawable.pokemon4, R.drawable.pokemon5, R.drawable.onepiece1, R.drawable.onepiece2, R.drawable.onepiece3, R.drawable.onepiece4, R.drawable.onepiece5, R.drawable.yugioh1, R.drawable.yugioh2, R.drawable.yugioh3, R.drawable.yugioh4, R.drawable.yugioh5, R.drawable.mtg1, R.drawable.mtg2, R.drawable.mtg3, R.drawable.mtg4, R.drawable.mtg5};
-        long[] values = {1500, 6800, 900, 600, 12500, 8500, 4200, 2100, 750, 1100, 18000, 3200, 650, 1200, 800, 500, 2400, 1800, 950, 550};
-        String[] sellers = {"CardCorner", "DeckCollector", "ManilaTCG", "CardShelf"};
-        String[] bidders = {"CardHunter", "DeckFan", "CollectorPH", "CardHunter", "TCGPlayer"};
-        ArrayList<AuctionItem> items = new ArrayList<>();
-        for (int i = 0; i < names.length; i++) {
-            AuctionItem a = new AuctionItem();
-            a.id = "auction_" + i;
-            a.name = names[i];
-            a.image = images[i];
-            a.game = CATEGORIES[i / 5 + 1];
-            a.condition = CONDITIONS[i % 3 + 1];
-            a.seller = sellers[i % sellers.length];
-            a.increment = values[i] >= 5000 ? 100 : 50;
-            a.currentBid = values[i];
-            a.startingBid = values[i] - a.increment * 5;
-            a.startsAt = seedTime - 86400000L;
-            a.endsAt = seedTime + (2L + i * 3L) * 3600000L + (i % 3) * 840000L;
-            for (int j = 0; j < 5; j++) a.history.add(new AuctionItem.Bid(bidders[j], a.currentBid - j * a.increment, seedTime - (j + 1) * 900000L));
-            items.add(a);
-        }
-        return items;
-    }
-
     public static void image(Context context, android.widget.ImageView view, AuctionItem a) {
-        android.graphics.BitmapFactory.Options options = new android.graphics.BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        android.graphics.BitmapFactory.decodeResource(context.getResources(), a.image, options);
-        options.inSampleSize = 1;
-        while (options.outHeight / options.inSampleSize > 600 || options.outWidth / options.inSampleSize > 450) options.inSampleSize *= 2;
-        options.inJustDecodeBounds = false;
-        view.setImageBitmap(android.graphics.BitmapFactory.decodeResource(context.getResources(), a.image, options));
-        view.setContentDescription(a.name);
+        BinderStore.Card card = new BinderStore.Card(a.binderId, a.name, a.set, a.game, a.condition);
+        card.uri = a.photo;
+        BinderStore.image(context, view, card);
+        if (a.isPending(System.currentTimeMillis())) {
+            android.graphics.ColorMatrix matrix = new android.graphics.ColorMatrix();
+            matrix.setSaturation(0);
+            view.setColorFilter(new android.graphics.ColorMatrixColorFilter(matrix));
+        } else view.clearColorFilter();
     }
-
-    public static String money(long value) {
-        return String.format(Locale.US, "₱%,d", value);
-    }
-
+    public static String money(long value) { return String.format(Locale.US, "₱%,d", value); }
     public static String timeLeft(AuctionItem a) {
-        long remaining = a.endsAt - System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+        boolean pending = a.isPending(now);
+        long remaining = (pending ? a.startsAt : a.endsAt) - now;
         if (remaining <= 0) return "Ended";
         long seconds = (remaining + 999) / 1000;
-        if (seconds < 60) return seconds + "s left";
-        long minutes = seconds / 60;
-        if (minutes >= 1440) return minutes / 1440 + "d " + minutes % 1440 / 60 + "h left";
-        if (minutes >= 60) return minutes / 60 + "h " + minutes % 60 + "m left";
-        return minutes + "m left";
+        String label;
+        if (seconds < 60) label = seconds + "s";
+        else if (seconds < 3600) label = seconds / 60 + "m";
+        else if (seconds < 86400) label = seconds / 3600 + "h " + seconds % 3600 / 60 + "m";
+        else label = seconds / 86400 + "d " + seconds % 86400 / 3600 + "h";
+        return pending ? "Opens in " + label : label + " left";
     }
 }

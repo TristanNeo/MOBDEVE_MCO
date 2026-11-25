@@ -63,10 +63,10 @@ public class BinderController {
             ((TextView) tile.findViewById(R.id.card_name)).setText(card.name);
             ((TextView) tile.findViewById(R.id.card_set)).setText(card.set.isEmpty() ? card.game : card.set);
             ((TextView) tile.findViewById(R.id.card_condition)).setText(card.condition);
-            ((TextView) tile.findViewById(R.id.card_value)).setText(card.demo ? BinderStore.money(card.average) : "No sales yet");
+            ((TextView) tile.findViewById(R.id.card_value)).setText(AuctionStore.average(activity, card));
             TextView change = tile.findViewById(R.id.card_change);
-            change.setText(BinderStore.change(card));
-            change.setTextColor(BinderStore.changeColor(card));
+            change.setText("—");
+            tile.setTag(card);
             tile.setOnClickListener(v -> {
                 Intent intent = new Intent(activity, CardDetailsActivity.class);
                 intent.putExtra("card_id", card.id);
@@ -75,6 +75,7 @@ public class BinderController {
             grid.addView(tile);
             count++;
         }
+        updateStatuses();
         boolean empty = cards.isEmpty();
         search.setVisibility(empty ? View.GONE : View.VISIBLE);
         TextView total = activity.findViewById(R.id.binder_count);
@@ -87,6 +88,19 @@ public class BinderController {
         activity.findViewById(R.id.binder_button_space).setVisibility(empty ? View.GONE : View.VISIBLE);
         binder.setGravity(empty ? Gravity.CENTER_VERTICAL : Gravity.TOP);
         binder.post(this::updateHeight);
+    }
+
+    public void updateStatuses() {
+        for (int i = 0; i < grid.getChildCount(); i++) {
+            View tile = grid.getChildAt(i);
+            BinderStore.Card card = (BinderStore.Card) tile.getTag();
+            if (card == null) continue;
+            TextView status = tile.findViewById(R.id.binder_auction_status);
+            status.setText(BinderStore.status(activity, card));
+            AuctionItem listing = AuctionStore.find(activity, card.auctionId);
+            tile.setAlpha(listing != null && listing.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
+            ((TextView) tile.findViewById(R.id.card_value)).setText(AuctionStore.average(activity, card));
+        }
     }
 
     private void updateHeight() {

@@ -96,14 +96,9 @@ public class AuctionDetailsActivity extends Activity {
         label(R.id.detail_auction_count, auction.history.size() + " bids");
         label(R.id.detail_auction_start, AuctionStore.money(auction.startingBid));
         label(R.id.detail_auction_increment, AuctionStore.money(auction.increment));
-        String[] notes = {
-            "A standout card with artwork that deserves a place at the front of a binder. One of my personal favourites.",
-            "A memorable addition for anyone building a collection around this series. The illustration is the highlight for me.",
-            "Making room for a new collecting goal. I hope this card finds a home with someone who enjoys it as much as I have.",
-            "This card has been a favourite in my collection. A great conversation piece for fellow collectors."
-        };
-        label(R.id.auction_notes, notes[Math.floorMod(auction.id.hashCode(), notes.length)]);
+        label(R.id.auction_notes, auction.notes.isEmpty() ? "No seller notes." : auction.notes);
         ImageButton heart = findViewById(R.id.auction_save);
+        heart.setVisibility(auction.isOwned() ? View.GONE : View.VISIBLE);
         heart.setImageResource(auction.saved ? R.drawable.auction_heart_saved : R.drawable.auction_heart);
         heart.setContentDescription(auction.saved ? "Remove from watchlist" : "Save to watchlist");
         LinearLayout summary = findViewById(R.id.auction_summary);
@@ -122,9 +117,14 @@ public class AuctionDetailsActivity extends Activity {
 
     private void updateStatus() {
         boolean active = auction.isActive(System.currentTimeMillis());
+        ImageView image = findViewById(R.id.detail_auction_image);
+        image.setAlpha(auction.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
+        if (!auction.isPending(System.currentTimeMillis())) image.clearColorFilter();
         label(R.id.detail_auction_time, countdown());
         String status;
-        if (!active) status = auction.isLeading() ? "You won this auction." : "This auction has ended.";
+        if (auction.isPending(System.currentTimeMillis())) status = "Scheduled · opens " + date(auction.startsAt);
+        else if (!active) status = auction.isOwned() ? (auction.history.isEmpty() ? "Your auction ended with no bids." : "Your card sold for " + AuctionStore.money(auction.currentBid)) : auction.isLeading() ? "You won this auction." : "This auction has ended.";
+        else if (auction.isOwned()) status = "This is your auction.";
         else if (auction.isLeading()) status = "You are the highest bidder.";
         else if (auction.hasBid()) status = "You have been outbid.";
         else status = "";
@@ -133,16 +133,16 @@ public class AuctionDetailsActivity extends Activity {
         findViewById(R.id.detail_auction_status).setVisibility(status.isEmpty() ? View.GONE : View.VISIBLE);
         Button bid = findViewById(R.id.auction_place_bid);
         Button auto = findViewById(R.id.auction_auto_bid);
-        bid.setEnabled(active && !busy && !auction.isLeading());
+        bid.setEnabled(active && !busy && !auction.isOwned() && !auction.isLeading());
         bid.setAlpha(bid.isEnabled() ? 1f : 0.5f);
-        auto.setEnabled(active && !busy);
+        auto.setEnabled(active && !busy && !auction.isOwned());
         auto.setAlpha(auto.isEnabled() ? 1f : 0.5f);
         findViewById(R.id.auction_save).setEnabled(!busy);
         auto.setText(auction.autoBidMax > 0 ? "Edit Auto-Bid" : "Auto-Bid");
     }
 
     private void bidDialog(boolean automatic) {
-        if (auction == null || busy) return;
+        if (auction == null || busy || auction.isOwned() || !auction.isActive(System.currentTimeMillis())) return;
         View form = getLayoutInflater().inflate(R.layout.dialog_auction_bid, null);
         EditText amount = form.findViewById(R.id.bid_amount);
         long minimum = automatic && auction.isLeading() ? auction.currentBid : auction.minimumBid();
@@ -254,6 +254,7 @@ public class AuctionDetailsActivity extends Activity {
     }
 
     private String countdown() {
+        if (auction.isPending(System.currentTimeMillis())) return AuctionStore.timeLeft(auction);
         long remaining = auction.endsAt - System.currentTimeMillis();
         if (remaining <= 0) return "Ended";
         long seconds = (remaining + 999) / 1000;

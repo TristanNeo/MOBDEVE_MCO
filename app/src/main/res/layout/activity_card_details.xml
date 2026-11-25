@@ -56,14 +56,10 @@
                         android:textSize="13sp"
                         android:textColor="#95A1B3"
                         android:layout_marginTop="6dp"/>
-                    <Spinner
-                        android:id="@+id/detail_condition"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/input_background"
-                        android:popupBackground="#182334"
-                        android:spinnerMode="dropdown"/>
+                    <TextView android:id="@+id/detail_condition" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#D4A63A" android:textSize="14sp"/>
+                    <Button android:id="@+id/card_auction_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:background="@drawable/button_gold" android:backgroundTint="@null" android:text="Auction this card" android:textAllCaps="false" android:textSize="12sp" android:textColor="#0B1220"/>
+                    <TextView android:id="@+id/card_auction_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#95A1B3" android:textSize="12sp"/>
+
                 </LinearLayout>
             </LinearLayout>
             <TextView
@@ -97,7 +93,7 @@
                 android:id="@+id/detail_note"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Change vs. previous 30 days"
+                android:text="No completed auctions for this card and condition."
                 android:textSize="11sp"
                 android:textColor="#95A1B3"
                 android:layout_marginTop="4dp"/>

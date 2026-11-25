@@ -1,133 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0B1220"
-    android:fitsSystemWindows="true">
-    <Button
-        android:id="@+id/back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="56dp"
-        android:background="@android:color/transparent"
-        android:text="‹  Add Card"
-        android:textAllCaps="false"
-        android:textSize="20sp"
-        android:textColor="#FAF8F2"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"/>
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp"
-            android:focusableInTouchMode="true">
-            <ImageView
-                android:id="@+id/add_preview"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/deckbid_card_placeholder"
-                android:contentDescription="Selected card photo"/>
-            <Button
-                android:id="@+id/pick_photo_button"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/button_outline"
-                android:backgroundTint="@null"
-                android:text="Choose photo from device"
-                android:textAllCaps="false"
-                android:textColor="#D4A63A"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Card name"
-                android:textSize="14sp"
-                android:textColor="#FAF8F2"
-                android:layout_marginTop="18dp"/>
-            <EditText
-                android:id="@+id/add_name"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:padding="14dp"
-                android:background="@drawable/input_background"
-                android:hint="Enter card name"
-                android:textColor="#FAF8F2"
-                android:textColorHint="#95A1B3"
-                android:textSize="14sp"
-                android:inputType="textCapSentences"
-                android:maxLength="80"
-                android:singleLine="true"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Trading card game"
-                android:textSize="14sp"
-                android:textColor="#FAF8F2"
-                android:layout_marginTop="16dp"/>
-            <Spinner
-                android:id="@+id/game_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Set / card number"
-                android:textSize="14sp"
-                android:textColor="#FAF8F2"
-                android:layout_marginTop="16dp"/>
-            <EditText
-                android:id="@+id/add_set"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:padding="14dp"
-                android:background="@drawable/input_background"
-                android:hint="Enter set or card number"
-                android:textColor="#FAF8F2"
-                android:textColorHint="#95A1B3"
-                android:textSize="14sp"
-                android:inputType="textCapSentences"
-                android:maxLength="80"
-                android:singleLine="true"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Condition"
-                android:textSize="14sp"
-                android:textColor="#FAF8F2"
-                android:layout_marginTop="16dp"/>
-            <Spinner
-                android:id="@+id/condition_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-            <Button
-                android:id="@+id/save_card_button"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/button_gold"
-                android:backgroundTint="@null"
-                android:text="Add to Binder"
-                android:textColor="#0B1220"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="12dp"/>
-        </LinearLayout>
-    </ScrollView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#0B1220" android:fitsSystemWindows="true">
+<Button android:id="@+id/back_button" android:layout_width="wrap_content" android:layout_height="56dp" android:background="@android:color/transparent" android:text="‹  Add Card" android:textAllCaps="false" android:textSize="20sp" android:textColor="#FAF8F2" android:paddingStart="20dp" android:paddingEnd="20dp"/>
+<ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true"><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp" android:focusableInTouchMode="true">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Trading card game" android:textColor="#95A1B3" android:textSize="14sp" android:layout_marginTop="16dp" android:layout_marginBottom="6dp"/><Spinner android:id="@+id/game_spinner" android:layout_width="match_parent" android:layout_height="52dp" android:background="@drawable/input_background" android:popupBackground="#182334" android:spinnerMode="dropdown"/><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Condition" android:textColor="#95A1B3" android:textSize="14sp" android:layout_marginTop="16dp" android:layout_marginBottom="6dp"/><Spinner android:id="@+id/condition_spinner" android:layout_width="match_parent" android:layout_height="52dp" android:background="@drawable/input_background" android:popupBackground="#182334" android:spinnerMode="dropdown"/><RadioGroup android:id="@+id/card_source_mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:checkedButton="@+id/card_source_existing" android:layout_marginTop="16dp">
+<RadioButton android:id="@+id/card_source_existing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="Choose an existing card" android:textColor="#FAF8F2" android:buttonTint="#D4A63A"/>
+<RadioButton android:id="@+id/card_source_new" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="Add new card" android:textColor="#FAF8F2" android:buttonTint="#D4A63A"/>
+</RadioGroup>
+<LinearLayout android:id="@+id/card_catalog_panel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Find a card with matching condition" android:textColor="#95A1B3" android:textSize="14sp" android:layout_marginTop="16dp" android:layout_marginBottom="6dp"/><EditText android:id="@+id/card_catalog_search" android:layout_width="match_parent" android:layout_height="52dp" android:background="@drawable/input_background" android:padding="14dp" android:textColor="#FAF8F2" android:textColorHint="#95A1B3" android:textSize="14sp" android:hint="Search card name or set" android:inputType="textCapSentences" android:singleLine="true" android:text="" /><TextView android:id="@+id/card_catalog_note" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="10dp" android:paddingBottom="10dp" android:textColor="#95A1B3" android:textSize="12sp"/>
+<LinearLayout android:id="@+id/card_catalog_results" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
 </LinearLayout>
+<ImageView android:id="@+id/add_preview" android:layout_width="match_parent" android:layout_height="200dp" android:layout_marginTop="16dp" android:scaleType="fitCenter" android:src="@drawable/deckbid_card_placeholder" android:contentDescription="Selected card photo"/>
+<Button android:id="@+id/pick_photo_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:background="@drawable/button_outline" android:backgroundTint="@null" android:text="Choose photo from device" android:textAllCaps="false" android:textColor="#D4A63A"/><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Card name" android:textColor="#95A1B3" android:textSize="14sp" android:layout_marginTop="16dp" android:layout_marginBottom="6dp"/><EditText android:id="@+id/add_name" android:layout_width="match_parent" android:layout_height="52dp" android:background="@drawable/input_background" android:padding="14dp" android:textColor="#FAF8F2" android:textColorHint="#95A1B3" android:textSize="14sp" android:hint="Enter card name" android:inputType="textCapSentences" android:singleLine="true" android:text="" android:maxLength="80"/><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Set / card number" android:textColor="#95A1B3" android:textSize="14sp" android:layout_marginTop="16dp" android:layout_marginBottom="6dp"/><EditText android:id="@+id/add_set" android:layout_width="match_parent" android:layout_height="52dp" android:background="@drawable/input_background" android:padding="14dp" android:textColor="#FAF8F2" android:textColorHint="#95A1B3" android:textSize="14sp" android:hint="Enter set or card number" android:inputType="textCapSentences" android:singleLine="true" android:text="" android:maxLength="80"/><Button android:id="@+id/save_card_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:background="@drawable/button_gold" android:backgroundTint="@null" android:text="Add to Binder" android:textAllCaps="false" android:textColor="#0B1220"/>
+</LinearLayout></ScrollView></LinearLayout>

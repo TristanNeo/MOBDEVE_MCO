@@ -46,9 +46,9 @@ public class BinderStore {
     public static Card read(com.google.firebase.firestore.DocumentSnapshot doc) {
         Card card = new Card(doc.getId(), text(doc, "name"), text(doc, "set"), text(doc, "game"), text(doc, "condition"));
         card.uri = text(doc, "photo");
-        card.demo = Boolean.TRUE.equals(doc.getBoolean("demo"));
-        card.average = doc.getDouble("average") == null ? 0 : doc.getDouble("average");
-        card.change = doc.getDouble("change") == null ? 0 : doc.getDouble("change");
+        card.sourceAuctionId = text(doc, "sourceAuctionId");
+        card.catalogId = AuctionItem.cardKey(card.game, card.name, card.set, card.condition);
+        card.auctionId = text(doc, "auctionId");
         return card;
     }
 
@@ -61,8 +61,7 @@ public class BinderStore {
 
     public static class Card {
         public String id, name, set, game, condition, uri;
-        public boolean demo;
-        public double average, change;
+        public String catalogId = "", sourceAuctionId = "", auctionId = "";
 
         public Card(String id, String name, String set, String game, String condition) {
             this.id = id;
@@ -84,7 +83,8 @@ public class BinderStore {
         if (uid == null) return com.google.android.gms.tasks.Tasks.forException(new Exception("Please sign in again."));
         final String photo;
         try {
-            photo = card.uri.isEmpty() ? "" : ProfileImages.encode(ProfileImages.load(context, Uri.parse(card.uri)));
+            photo = card.uri.startsWith("content:") || card.uri.startsWith("file:")
+                    ? ProfileImages.encode(ProfileImages.load(context, Uri.parse(card.uri))) : card.uri;
         } catch (Exception e) { return com.google.android.gms.tasks.Tasks.forException(e); }
         java.util.Map<String, Object> data = new java.util.HashMap<>();
         data.put("name", card.name);
@@ -92,6 +92,9 @@ public class BinderStore {
         data.put("game", card.game);
         data.put("condition", card.condition);
         data.put("photo", photo);
+        data.put("catalogId", AuctionItem.cardKey(card.game, card.name, card.set, card.condition));
+        data.put("sourceAuctionId", card.sourceAuctionId);
+        data.put("auctionId", "");
         return com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(uid)
                 .collection("binder").document(card.id).set(data);
     }
@@ -100,12 +103,13 @@ public class BinderStore {
         return String.format(Locale.US, "₱%,.0f", amount);
     }
 
-    public static String change(Card c) {
-        return c.demo ? String.format(Locale.US, "%s %.1f%%", c.change >= 0 ? "▲" : "▼", Math.abs(c.change)) : "—";
-    }
-
-    public static int changeColor(Card c) {
-        return android.graphics.Color.parseColor(!c.demo ? "#95A1B3" : c.change >= 0 ? "#4CD6A0" : "#F28B82");
+    public static String status(Context context, Card card) {
+        AuctionItem listing = AuctionStore.find(context, card.auctionId);
+        if (listing == null) return "In Binder";
+        long now = System.currentTimeMillis();
+        if (listing.isPending(now)) return "Scheduled · " + AuctionStore.timeLeft(listing);
+        if (listing.isActive(now)) return "Being auctioned · " + AuctionStore.timeLeft(listing);
+        return listing.history.isEmpty() ? "Auction ended · no bids" : "Sold";
     }
 
     public static void image(Context context, ImageView view, Card card) {

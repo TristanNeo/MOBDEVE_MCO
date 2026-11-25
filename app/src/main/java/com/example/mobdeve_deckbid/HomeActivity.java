@@ -29,6 +29,7 @@ public class HomeActivity extends Activity {
         @Override
         public void run() {
             if (auctionsController != null) auctionsController.updateTimes();
+            if (binderController != null) binderController.updateStatuses();
             clockHandler.postDelayed(this, 1000);
         }
     };
@@ -90,14 +91,8 @@ public class HomeActivity extends Activity {
         }
 
         showTab(selectedTab);
-        AuctionStore.initialize(this)
-                .addOnCompleteListener(task -> {
-                    if (isFinishing() || isDestroyed()) return;
-                    if (!task.isSuccessful()) android.widget.Toast.makeText(this,
-                            "Could not prepare data: " + task.getException().getMessage(), android.widget.Toast.LENGTH_LONG).show();
-                    dataReady = true;
-                    startListening();
-                });
+        dataReady = true;
+        startListening();
         if (started) clockHandler.post(updateClocks);
     }
 
@@ -114,7 +109,10 @@ public class HomeActivity extends Activity {
             binderController.refresh();
             auctionsController.refresh();
         });
-        if (auctionListener == null) auctionListener = AuctionStore.listen(this, () -> auctionsController.refresh());
+        if (auctionListener == null) auctionListener = AuctionStore.listen(this, () -> {
+            auctionsController.refresh();
+            binderController.refresh();
+        });
         binderController.refresh();
         auctionsController.refresh();
     }

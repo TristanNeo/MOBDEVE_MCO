@@ -43,6 +43,7 @@
         android:textSize="11sp"
         android:textColor="#D4A63A"
         android:layout_marginTop="6dp"/>
+    <TextView android:id="@+id/binder_auction_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#D4A63A" android:textSize="11sp"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -188,6 +188,10 @@
         android:importantForAccessibility="no" />
         </FrameLayout>
     </LinearLayout>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:layout_marginBottom="12dp" android:text="My Auctions" android:textColor="#FAF8F2" android:textSize="20sp" android:textStyle="bold"/>
+    <LinearLayout android:id="@+id/home_own_auctions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:layout_marginBottom="12dp" android:text="Auctions I’m Bidding On" android:textColor="#FAF8F2" android:textSize="20sp" android:textStyle="bold"/>
+    <LinearLayout android:id="@+id/home_bid_auctions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
