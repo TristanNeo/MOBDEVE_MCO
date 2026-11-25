@@ -20,121 +20,55 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="12dp">
-        <LinearLayout
+        android:layout_marginTop="8dp">
+        <Spinner
+            android:id="@+id/auction_category"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="3dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Category"
-                android:textSize="11sp"
-                android:textColor="#95A1B3"
-                android:layout_marginBottom="5dp"/>
-            <Spinner
-                android:id="@+id/auction_category"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-        </LinearLayout>
-        <LinearLayout
+            android:minHeight="44dp"
+            android:layout_marginStart="0dp"
+            android:spinnerMode="dropdown"
+            android:dropDownWidth="180dp"
+            android:background="@drawable/input_background"
+            android:popupBackground="#182334"/>
+        <Spinner
+            android:id="@+id/auction_condition"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="3dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Condition"
-                android:textSize="11sp"
-                android:textColor="#95A1B3"
-                android:layout_marginBottom="5dp"/>
-            <Spinner
-                android:id="@+id/auction_condition"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-        </LinearLayout>
+            android:minHeight="44dp"
+            android:layout_marginStart="6dp"
+            android:spinnerMode="dropdown"
+            android:dropDownWidth="180dp"
+            android:background="@drawable/input_background"
+            android:popupBackground="#182334"/>
+        <Spinner
+            android:id="@+id/auction_price"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="44dp"
+            android:layout_marginStart="6dp"
+            android:spinnerMode="dropdown"
+            android:dropDownWidth="180dp"
+            android:background="@drawable/input_background"
+            android:popupBackground="#182334"/>
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="6dp">
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="3dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Current bid"
-                android:textSize="11sp"
-                android:textColor="#95A1B3"
-                android:layout_marginBottom="5dp"/>
-            <Spinner
-                android:id="@+id/auction_price"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="3dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Sort by"
-                android:textSize="11sp"
-                android:textColor="#95A1B3"
-                android:layout_marginBottom="5dp"/>
-            <Spinner
-                android:id="@+id/auction_sort"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
-        </LinearLayout>
-    </LinearLayout>
-    <TextView
-        android:id="@+id/auction_result_count"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="0 auctions · Live auctions"
-        android:textSize="12sp"
-        android:textColor="#95A1B3"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="12dp"/>
     <Button
         android:id="@+id/auction_clear"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:background="@android:color/transparent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:layout_gravity="end"
+        android:background="?android:attr/selectableItemBackground"
         android:text="Clear filters"
         android:textColor="#D4A63A"
         android:textAllCaps="false"/>
     <TextView android:id="@+id/my_auctions_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginBottom="12dp" android:text="My Auctions" android:textColor="#FAF8F2" android:textSize="20sp" android:textStyle="bold"/>
     <LinearLayout android:id="@+id/my_auction_rows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
     <TextView android:id="@+id/my_auctions_empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Choose a card in your Binder to create an auction." android:textColor="#95A1B3" android:paddingTop="8dp" android:paddingBottom="16dp"/>
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginBottom="12dp" android:text="Other Auctions" android:textColor="#FAF8F2" android:textSize="20sp" android:textStyle="bold"/>
+    <TextView android:id="@+id/live_auctions_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginBottom="12dp" android:text="Live Auctions" android:textColor="#FAF8F2" android:textSize="20sp" android:textStyle="bold"/>
     <GridLayout
         android:id="@+id/auction_grid"
         android:layout_width="match_parent"

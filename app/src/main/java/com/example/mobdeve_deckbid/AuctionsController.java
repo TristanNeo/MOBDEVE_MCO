@@ -15,14 +15,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
-import java.util.Collections;
+import android.widget.RadioGroup;
 import java.util.Comparator;
 import java.util.Locale;
 
 public class AuctionsController {
     private final HomeActivity activity;
     private final EditText search;
-    private final Spinner category, condition, price, sort;
+    private final Spinner category, condition, price;
     private ArrayList<AuctionItem> auctions;
     private final ArrayList<TextView> clocks = new ArrayList<>();
     private int status = 0;
@@ -34,11 +34,9 @@ public class AuctionsController {
         category = activity.findViewById(R.id.auction_category);
         condition = activity.findViewById(R.id.auction_condition);
         price = activity.findViewById(R.id.auction_price);
-        sort = activity.findViewById(R.id.auction_sort);
-        bind(category, AuctionStore.CATEGORIES);
-        bind(condition, AuctionStore.CONDITIONS);
-        bind(price, AuctionStore.PRICES);
-        bind(sort, AuctionStore.SORTS);
+        bind(category, "Game", AuctionStore.CATEGORIES);
+        bind(condition, "Condition", AuctionStore.CONDITIONS);
+        bind(price, "Price", AuctionStore.PRICES);
         AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) { renderGrid(); }
             public void onNothingSelected(AdapterView<?> parent) { }
@@ -46,7 +44,6 @@ public class AuctionsController {
         category.setOnItemSelectedListener(listener);
         condition.setOnItemSelectedListener(listener);
         price.setOnItemSelectedListener(listener);
-        sort.setOnItemSelectedListener(listener);
         search.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             public void onTextChanged(CharSequence s, int start, int before, int count) { renderGrid(); }
@@ -54,7 +51,11 @@ public class AuctionsController {
         });
         activity.findViewById(R.id.auction_clear).setOnClickListener(v -> filter(0, 0));
         activity.findViewById(R.id.home_browse).setOnClickListener(v -> activity.openAuctions(0, 0));
-        activity.findViewById(R.id.home_see_all).setOnClickListener(v -> activity.openAuctions(0, 0));
+        RadioGroup roles = activity.findViewById(R.id.home_auction_roles);
+        roles.check(R.id.home_selling);
+        roles.setOnCheckedChangeListener((group, checked) -> {
+            if (auctions != null) renderDashboard();
+        });
         activity.findViewById(R.id.home_binder_stat).setOnClickListener(v -> activity.openTab(3));
         activity.findViewById(R.id.home_watch_stat).setOnClickListener(v -> activity.openTab(1));
         activity.findViewById(R.id.home_bids_stat).setOnClickListener(v -> activity.openAuctions(0, 1));
@@ -67,9 +68,16 @@ public class AuctionsController {
         refresh();
     }
 
-    private void bind(Spinner spinner, String[] choices) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.auction_spinner_item, choices);
-        adapter.setDropDownViewResource(R.layout.auction_spinner_item);
+    private void bind(Spinner spinner, String title, String[] choices) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, R.layout.auction_spinner_item, choices) {
+            @Override public View getView(int position, View previous, android.view.ViewGroup parent) {
+                TextView label = (TextView) super.getView(position, previous, parent);
+                label.setText((position == 0 ? title : choices[position]) + " ▾");
+                label.setContentDescription(title + ", " + choices[position]);
+                return label;
+            }
+        };
+        adapter.setDropDownViewResource(R.layout.binder_spinner_item);
         spinner.setAdapter(adapter);
     }
 
@@ -83,7 +91,6 @@ public class AuctionsController {
         category.setSelection(game);
         condition.setSelection(0);
         price.setSelection(0);
-        sort.setSelection(0);
         renderGrid();
     }
 
@@ -138,9 +145,7 @@ public class AuctionsController {
             if (status == 2 && (a.endsAt > now || !a.isLeading())) continue;
             filtered.add(a);
         }
-        int order = sort.getSelectedItemPosition();
-        Collections.sort(filtered, (a, b) -> order == 1 ? Long.compare(a.currentBid, b.currentBid)
-                : order == 2 ? Long.compare(b.currentBid, a.currentBid) : Long.compare(a.endsAt, b.endsAt));
+        filtered.sort(Comparator.comparingLong(a -> a.endsAt));
         owned.sort((a, b) -> {
             boolean endedA = a.endsAt <= now, endedB = b.endsAt <= now;
             if (endedA != endedB) return endedA ? 1 : -1;
@@ -163,8 +168,8 @@ public class AuctionsController {
             params.setMargins(i % 2 == 0 ? 0 : dp(5), 0, i % 2 == 0 ? dp(5) : 0, dp(10));
             tile.setLayoutParams(params); bindCard(tile, filtered.get(i)); grid.addView(tile);
         }
-        String suffix = status == 1 ? "Your active bids" : status == 2 ? "Your wins" : "Live auctions";
-        ((TextView) activity.findViewById(R.id.auction_result_count)).setText(filtered.size() + " auctions · " + suffix);
+        TextView title = activity.findViewById(R.id.live_auctions_title);
+        title.setText(status == 1 ? "Your active bids" : status == 2 ? "Your wins" : "Live Auctions");
         activity.findViewById(R.id.auction_empty).setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
@@ -180,7 +185,7 @@ public class AuctionsController {
         AuctionStore.image(activity, (ImageView) view.findViewById(R.id.auction_image), a);
         ((TextView) view.findViewById(R.id.auction_name)).setText(a.name);
         ((TextView) view.findViewById(R.id.auction_game)).setText(a.game);
-        ((TextView) view.findViewById(R.id.auction_grade)).setText(a.condition);
+        CardAppearance.condition(view.findViewById(R.id.auction_grade), a.condition);
         ((TextView) view.findViewById(R.id.auction_bid)).setText(AuctionStore.money(a.currentBid));
         boolean pending = a.isPending(System.currentTimeMillis());
         view.setAlpha(pending ? 0.55f : 1f);
@@ -212,13 +217,12 @@ public class AuctionsController {
     private void renderDashboard() {
         int saved = 0, bidding = 0, won = 0;
         long now = System.currentTimeMillis();
-        ArrayList<AuctionItem> ending = new ArrayList<>(), own = new ArrayList<>(), bids = new ArrayList<>();
+        ArrayList<AuctionItem> own = new ArrayList<>(), bids = new ArrayList<>();
         for (AuctionItem a : auctions) {
             if (a.saved) saved++;
-            if (a.isOwned() && a.endsAt > now) own.add(a);
+            if (a.isOwned() && a.isActive(now)) own.add(a);
             if (!a.isOwned() && a.hasBid() && a.isActive(now)) bids.add(a);
             if (a.isActive(now)) {
-                ending.add(a);
                 if (a.hasBid()) bidding++;
             } else if (a.endsAt <= now && a.isLeading()) won++;
         }
@@ -228,30 +232,13 @@ public class AuctionsController {
         ((TextView) activity.findViewById(R.id.home_won_stat)).setText(won + "\nWon");
         int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
         ((TextView) activity.findViewById(R.id.home_greeting)).setText(hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,");
-        own.sort(Comparator.comparingLong(a -> a.startsAt));
-        bids.sort(Comparator.comparingLong(a -> a.endsAt));
-        dashboardRows(R.id.home_own_auctions, own, "No active or scheduled auctions of your own.");
-        dashboardRows(R.id.home_bid_auctions, bids, "You have no active bids.");
-        Collections.sort(ending, Comparator.comparingLong(a -> a.endsAt));
-        LinearLayout list = activity.findViewById(R.id.home_ending_list);
-        list.removeAllViews();
-        for (int i = 0; i < Math.min(3, ending.size()); i++) {
-            View row = activity.getLayoutInflater().inflate(R.layout.item_auction_row, list, false);
-            bindCard(row, ending.get(i));
-            row.findViewById(R.id.auction_save).setVisibility(View.GONE);
-            row.findViewById(R.id.auction_chevron).setVisibility(View.VISIBLE);
-            list.addView(row);
-        }
-        if (ending.isEmpty()) {
-            TextView empty = new TextView(activity);
-            empty.setText("No active auctions.");
-            empty.setTextColor(android.graphics.Color.parseColor("#95A1B3"));
-            list.addView(empty);
-        }
-    }
-
-    private void dashboardRows(int id, ArrayList<AuctionItem> items, String message) {
-        LinearLayout list = activity.findViewById(id);
+        boolean selling = ((RadioGroup) activity.findViewById(R.id.home_auction_roles)).getCheckedRadioButtonId() == R.id.home_selling;
+        ((TextView) activity.findViewById(R.id.home_selling)).setText("Selling (" + own.size() + ")");
+        ((TextView) activity.findViewById(R.id.home_bidding)).setText("Bidding (" + bids.size() + ")");
+        ArrayList<AuctionItem> items = selling ? own : bids;
+        items.sort(Comparator.comparingLong(a -> a.endsAt));
+        LinearLayout list = activity.findViewById(R.id.home_active_list);
+        removeClocks(list);
         list.removeAllViews();
         for (AuctionItem a : items) {
             View row = activity.getLayoutInflater().inflate(R.layout.item_auction_row, list, false);
@@ -261,7 +248,7 @@ public class AuctionsController {
             list.addView(row);
         }
         if (items.isEmpty()) {
-            TextView empty = new TextView(activity); empty.setText(message);
+            TextView empty = new TextView(activity); empty.setText(selling ? "You have no live listings." : "You have no bids on live auctions.");
             empty.setTextColor(android.graphics.Color.parseColor("#95A1B3")); empty.setPadding(0, dp(8), 0, dp(8));
             list.addView(empty);
         }

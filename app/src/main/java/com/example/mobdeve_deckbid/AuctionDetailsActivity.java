@@ -90,7 +90,7 @@ public class AuctionDetailsActivity extends Activity {
         AuctionStore.image(this, (ImageView) findViewById(R.id.detail_auction_image), auction);
         label(R.id.detail_auction_name, auction.name);
         label(R.id.detail_auction_game, auction.game);
-        label(R.id.detail_auction_grade, auction.condition);
+        CardAppearance.condition(findViewById(R.id.detail_auction_grade), auction.condition);
         label(R.id.detail_auction_seller, "by " + auction.seller);
         label(R.id.detail_auction_bid, AuctionStore.money(auction.currentBid));
         label(R.id.detail_auction_count, auction.history.size() + " bids");

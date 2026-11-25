@@ -105,7 +105,7 @@ public class BinderStore {
 
     public static String status(Context context, Card card) {
         AuctionItem listing = AuctionStore.find(context, card.auctionId);
-        if (listing == null) return "In Binder";
+        if (listing == null) return "";
         long now = System.currentTimeMillis();
         if (listing.isPending(now)) return "Scheduled · " + AuctionStore.timeLeft(listing);
         if (listing.isActive(now)) return "Being auctioned · " + AuctionStore.timeLeft(listing);

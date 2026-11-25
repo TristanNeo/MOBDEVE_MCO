@@ -31,8 +31,8 @@
                 android:orientation="horizontal">
                 <ImageView
                     android:id="@+id/detail_image"
-                    android:layout_width="120dp"
-                    android:layout_height="190dp"
+                    android:layout_width="104dp"
+                    android:layout_height="156dp"
                     android:scaleType="fitCenter"/>
                 <LinearLayout
                     android:layout_width="0dp"
@@ -48,17 +48,52 @@
                         android:textSize="20sp"
                         android:textColor="#FAF8F2"
                         android:textStyle="bold"/>
+                    <ImageView
+                        android:id="@+id/detail_game_logo"
+                        android:layout_width="80dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="6dp"
+                        android:scaleType="fitStart"/>
                     <TextView
                         android:id="@+id/detail_set"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Set"
+                        android:layout_marginTop="4dp"
                         android:textSize="13sp"
-                        android:textColor="#95A1B3"
-                        android:layout_marginTop="6dp"/>
-                    <TextView android:id="@+id/detail_condition" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#D4A63A" android:textSize="14sp"/>
-                    <Button android:id="@+id/card_auction_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:background="@drawable/button_gold" android:backgroundTint="@null" android:text="Auction this card" android:textAllCaps="false" android:textSize="12sp" android:textColor="#0B1220"/>
-                    <TextView android:id="@+id/card_auction_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#95A1B3" android:textSize="12sp"/>
+                        android:textColor="#BAC5D3"/>
+                    <TextView
+                        android:id="@+id/detail_condition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:elevation="4dp"
+                        android:textSize="13sp"/>
+                    <Button
+                        android:id="@+id/card_auction_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:minWidth="0dp"
+                        android:minHeight="48dp"
+                        android:layout_marginTop="6dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:background="@drawable/card_auction_action"
+                        android:backgroundTint="@null"
+                        android:text="Auction this card"
+                        android:textSize="13sp"
+                        android:textColor="#FAF8F2"
+                        android:textAllCaps="false"/>
+                    <TextView
+                        android:id="@+id/card_auction_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="6dp"
+                        android:gravity="end"
+                        android:textColor="#DCC58B"
+                        android:textSize="13sp"
+                        android:visibility="gone"/>
 
                 </LinearLayout>
             </LinearLayout>

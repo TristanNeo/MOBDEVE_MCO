@@ -62,7 +62,7 @@ public class BinderController {
             BinderStore.image(activity, (ImageView) tile.findViewById(R.id.card_image), card);
             ((TextView) tile.findViewById(R.id.card_name)).setText(card.name);
             ((TextView) tile.findViewById(R.id.card_set)).setText(card.set.isEmpty() ? card.game : card.set);
-            ((TextView) tile.findViewById(R.id.card_condition)).setText(card.condition);
+            CardAppearance.condition(tile.findViewById(R.id.card_condition), card.condition);
             ((TextView) tile.findViewById(R.id.card_value)).setText(AuctionStore.average(activity, card));
             TextView change = tile.findViewById(R.id.card_change);
             change.setText("—");
@@ -96,7 +96,9 @@ public class BinderController {
             BinderStore.Card card = (BinderStore.Card) tile.getTag();
             if (card == null) continue;
             TextView status = tile.findViewById(R.id.binder_auction_status);
-            status.setText(BinderStore.status(activity, card));
+            String label = BinderStore.status(activity, card);
+            status.setText(label);
+            status.setVisibility(label.isEmpty() ? View.GONE : View.VISIBLE);
             AuctionItem listing = AuctionStore.find(activity, card.auctionId);
             tile.setAlpha(listing != null && listing.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
             ((TextView) tile.findViewById(R.id.card_value)).setText(AuctionStore.average(activity, card));

@@ -88,6 +88,9 @@ public class HomeActivity extends Activity {
         if (savedInstanceState != null) {
             selectedTab = savedInstanceState.getInt("selected_tab", 0);
             auctionsController.setStatus(savedInstanceState.getInt("auction_status", 0));
+            if (savedInstanceState.getBoolean("home_bidding")) {
+                ((android.widget.RadioGroup) findViewById(R.id.home_auction_roles)).check(R.id.home_bidding);
+            }
         }
 
         showTab(selectedTab);
@@ -252,7 +255,11 @@ public class HomeActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt("selected_tab", selectedTab);
-        if (auctionsController != null) outState.putInt("auction_status", auctionsController.getStatus());
+        if (auctionsController != null) {
+            outState.putInt("auction_status", auctionsController.getStatus());
+            android.widget.RadioGroup roles = findViewById(R.id.home_auction_roles);
+            outState.putBoolean("home_bidding", roles.getCheckedRadioButtonId() == R.id.home_bidding);
+        }
         super.onSaveInstanceState(outState);
     }
     private void refreshProfile() {

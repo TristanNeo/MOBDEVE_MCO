@@ -50,7 +50,7 @@
         android:ellipsize="end"/>
     <TextView
         android:id="@+id/auction_grade"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ungraded"
         android:textSize="11sp"

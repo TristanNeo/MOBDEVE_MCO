@@ -47,8 +47,19 @@ public class CardDetailsActivity extends Activity {
                     card = BinderStore.read(doc);
                     BinderStore.image(this, (ImageView) findViewById(R.id.detail_image), card);
                     ((TextView) findViewById(R.id.detail_name)).setText(card.name);
-                    ((TextView) findViewById(R.id.detail_set)).setText(card.game + "\n" + card.set);
-                    ((TextView) findViewById(R.id.detail_condition)).setText(card.condition);
+                    ImageView logo = findViewById(R.id.detail_game_logo);
+                    logo.setImageResource(CardAppearance.logo(card.game));
+                    logo.setContentDescription(card.game);
+                    TextView set = findViewById(R.id.detail_set);
+                    set.setText(card.set);
+                    set.setVisibility(card.set.isEmpty() ? View.GONE : View.VISIBLE);
+                    TextView condition = findViewById(R.id.detail_condition);
+                    CardAppearance.condition(condition, card.condition);
+                    condition.setShadowLayer(dp(2), 0, 0, (condition.getCurrentTextColor() & 0x00FFFFFF) | 0x66000000);
+                    if (android.os.Build.VERSION.SDK_INT >= 28) {
+                        condition.setOutlineSpotShadowColor(condition.getCurrentTextColor());
+                        condition.setOutlineAmbientShadowColor(condition.getCurrentTextColor());
+                    }
                     render();
                 });
         auctionListener = AuctionStore.listen(this, () -> { if (card != null) render(); });
@@ -65,8 +76,12 @@ public class CardDetailsActivity extends Activity {
         boolean available = listing == null || (listing.endsAt <= System.currentTimeMillis() && listing.history.isEmpty());
         ((ImageView) findViewById(R.id.detail_image)).setAlpha(listing != null && listing.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
         Button button = findViewById(R.id.card_auction_button);
-        button.setEnabled(available); button.setText(available ? "Auction this card" : listing.isPending(System.currentTimeMillis()) ? "Scheduled" : listing.isActive(System.currentTimeMillis()) ? "Being auctioned" : "Sold");
-        ((TextView) findViewById(R.id.card_auction_status)).setText(BinderStore.status(this, card));
+        button.setEnabled(available);
+        button.setVisibility(available ? View.VISIBLE : View.GONE);
+        TextView status = findViewById(R.id.card_auction_status);
+        String label = BinderStore.status(this, card);
+        status.setText(label);
+        status.setVisibility(label.isEmpty() ? View.GONE : View.VISIBLE);
         ((TextView) findViewById(R.id.detail_value)).setText(AuctionStore.average(this, card));
         ((TextView) findViewById(R.id.detail_change)).setText("—");
         ArrayList<AuctionItem> completed = AuctionStore.matching(this, card, true);

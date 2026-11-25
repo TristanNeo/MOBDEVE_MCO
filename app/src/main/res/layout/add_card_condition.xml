@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView style="@style/CardFormLabel" android:text="Condition"/>
+    <RadioGroup
+        android:id="@+id/grade_choices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp">
+        <RadioButton
+            android:id="@+id/grade_ungraded"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="0dp"
+            android:minHeight="44dp"
+            android:gravity="center"
+            android:button="@null"
+            android:backgroundTint="@null"
+            android:textSize="13sp"
+            android:text="Ungraded"/>
+        <RadioButton
+            android:id="@+id/grade_nine"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:minHeight="44dp"
+            android:gravity="center"
+            android:button="@null"
+            android:backgroundTint="@null"
+            android:textSize="13sp"
+            android:text="PSA 9"/>
+        <RadioButton
+            android:id="@+id/grade_ten"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:minHeight="44dp"
+            android:gravity="center"
+            android:button="@null"
+            android:backgroundTint="@null"
+            android:textSize="13sp"
+            android:text="PSA 10"/>
+    </RadioGroup>
+</merge>

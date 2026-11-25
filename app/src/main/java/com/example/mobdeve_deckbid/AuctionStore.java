@@ -33,7 +33,6 @@ public class AuctionStore {
     public static final String[] CATEGORIES = {"All games", "Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
     public static final String[] CONDITIONS = {"All conditions", "Ungraded", "PSA 9", "PSA 10"};
     public static final String[] PRICES = {"Any price", "Under ₱1,000", "₱1,000–₱5,000", "Over ₱5,000"};
-    public static final String[] SORTS = {"Ending soon", "Lowest bid", "Highest bid"};
 
     public static ArrayList<AuctionItem> load(Context context) {
         checkOwner();
@@ -58,17 +57,58 @@ public class AuctionStore {
                 : (a, b) -> Long.compare(a.endsAt, b.endsAt));
         return result;
     }
-    public static ArrayList<AuctionItem> catalog(Context context, String game, String condition) {
-        Map<String, AuctionItem> unique = new java.util.LinkedHashMap<>();
-        for (AuctionItem a : load(context)) {
-            if (a.isPending(System.currentTimeMillis()) || !a.game.equals(game) || !a.condition.equals(condition)) continue;
-            String key = AuctionItem.cardKey(a.game, a.name, a.set, a.condition);
-            unique.put(key, a);
+    static final class CatalogCard {
+        final String key;
+        AuctionItem artwork;
+        private final Map<String, AuctionItem> grades = new HashMap<>();
+
+        CatalogCard(String key) { this.key = key; }
+
+        private boolean prefer(AuctionItem item, AuctionItem previous) {
+            if (previous == null) return true;
+            if (item.photo.isEmpty() != previous.photo.isEmpty()) return !item.photo.isEmpty();
+            if (item.startsAt != previous.startsAt) return item.startsAt > previous.startsAt;
+            return item.id.compareTo(previous.id) < 0;
         }
-        ArrayList<AuctionItem> result = new ArrayList<>(unique.values());
-        result.sort((a, b) -> a.name.compareToIgnoreCase(b.name));
+
+        void include(AuctionItem item) {
+            if (prefer(item, artwork)) artwork = item;
+            if (prefer(item, grades.get(item.condition))) grades.put(item.condition, item);
+        }
+
+        BinderStore.Card copy(String id, String condition) {
+            AuctionItem source = grades.get(condition);
+            AuctionItem details = source == null ? artwork : source;
+            BinderStore.Card card = new BinderStore.Card(id, details.name, details.set, details.game, condition);
+            card.uri = details.photo.isEmpty() ? artwork.photo : details.photo;
+            card.sourceAuctionId = source == null ? "" : source.id;
+            return card;
+        }
+    }
+
+    static ArrayList<CatalogCard> catalog(Context context, String game) {
+        Map<String, CatalogCard> editions = new HashMap<>();
+        long now = System.currentTimeMillis();
+        for (AuctionItem item : load(context)) {
+            if (!item.game.equals(game) || item.isPending(now)) continue;
+            String key = AuctionItem.cardKey(game, item.name, item.set, "");
+            editions.computeIfAbsent(key, CatalogCard::new).include(item);
+        }
+        ArrayList<CatalogCard> result = new ArrayList<>(editions.values());
+        result.sort(java.util.Comparator.comparing((CatalogCard c) -> c.artwork.name, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(c -> c.artwork.set, String.CASE_INSENSITIVE_ORDER));
         return result;
     }
+
+    static long nextCatalogOpening(String game) {
+        checkOwner();
+        long now = System.currentTimeMillis(), next = Long.MAX_VALUE;
+        for (AuctionItem item : auctions) {
+            if (game.equals(item.game) && item.isPending(now)) next = Math.min(next, item.startsAt);
+        }
+        return next;
+    }
+
     public static String average(Context context, BinderStore.Card card) {
         ArrayList<AuctionItem> completed = matching(context, card, true);
         if (completed.isEmpty()) return "No sales yet";
