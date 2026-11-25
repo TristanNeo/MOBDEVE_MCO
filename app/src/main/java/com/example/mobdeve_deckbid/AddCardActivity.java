@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,36 +11,23 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 public class AddCardActivity extends Activity {
-    private Spinner artwork, game, condition;
+    private Spinner game, condition;
     private EditText name, set;
     private String photoUri = "";
-    private int selectedArtwork = 0;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_add_card);
-        artwork = findViewById(R.id.artwork_spinner);
         game = findViewById(R.id.game_spinner);
         condition = findViewById(R.id.condition_spinner);
         name = findViewById(R.id.add_name);
         set = findViewById(R.id.add_set);
-        bind(artwork, BinderStore.ARTWORK);
         bind(game, BinderStore.GAMES);
         bind(condition, BinderStore.CONDITIONS);
         if (state != null) {
             photoUri = state.getString("photo_uri", "");
-            selectedArtwork = state.getInt("artwork", 0);
-            artwork.setSelection(selectedArtwork);
         }
-        artwork.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position != selectedArtwork) photoUri = "";
-                selectedArtwork = position;
-                preview();
-            }
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
         findViewById(R.id.pick_photo_button).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -62,7 +47,7 @@ public class AddCardActivity extends Activity {
     }
 
     private void preview() {
-        BinderStore.Card card = new BinderStore.Card("", "Selected card photo", "", "", "Ungraded", selectedArtwork);
+        BinderStore.Card card = new BinderStore.Card("", "Selected card photo", "", "", "Ungraded");
         card.uri = photoUri;
         BinderStore.image(this, (ImageView) findViewById(R.id.add_preview), card);
     }
@@ -76,7 +61,7 @@ public class AddCardActivity extends Activity {
         }
         BinderStore.Card card = new BinderStore.Card(java.util.UUID.randomUUID().toString(), cardName,
                 set.getText().toString().trim(), game.getSelectedItem().toString(),
-                condition.getSelectedItem().toString(), artwork.getSelectedItemPosition());
+                condition.getSelectedItem().toString());
         card.uri = photoUri;
         findViewById(R.id.save_card_button).setEnabled(false);
         BinderStore.add(this, card).addOnCompleteListener(task -> {
@@ -109,7 +94,6 @@ public class AddCardActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle state) {
         state.putString("photo_uri", photoUri);
-        state.putInt("artwork", selectedArtwork);
         super.onSaveInstanceState(state);
     }
 }

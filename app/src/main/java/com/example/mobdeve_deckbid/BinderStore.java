@@ -36,6 +36,7 @@ public class BinderStore {
                     checkOwner();
                     addedCards.clear();
                     if (snapshot != null) for (com.google.firebase.firestore.DocumentSnapshot doc : snapshot.getDocuments()) {
+                        if (Boolean.TRUE.equals(doc.getBoolean("demo"))) continue;
                         addedCards.add(read(doc));
                     }
                     changed.run();
@@ -43,45 +44,12 @@ public class BinderStore {
     }
 
     public static Card read(com.google.firebase.firestore.DocumentSnapshot doc) {
-        Card card = new Card(doc.getId(), text(doc, "name"), text(doc, "set"), text(doc, "game"), text(doc, "condition"),
-                doc.getLong("artwork") == null ? 0 : doc.getLong("artwork").intValue());
+        Card card = new Card(doc.getId(), text(doc, "name"), text(doc, "set"), text(doc, "game"), text(doc, "condition"));
         card.uri = text(doc, "photo");
         card.demo = Boolean.TRUE.equals(doc.getBoolean("demo"));
         card.average = doc.getDouble("average") == null ? 0 : doc.getDouble("average");
         card.change = doc.getDouble("change") == null ? 0 : doc.getDouble("change");
         return card;
-    }
-
-    public static com.google.android.gms.tasks.Task<Void> initialize() {
-        String uid = AccountStore.uid();
-        if (uid == null) return com.google.android.gms.tasks.Tasks.forException(new Exception("Please sign in again."));
-        com.google.firebase.firestore.DocumentReference user = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("users").document(uid);
-        return com.google.firebase.firestore.FirebaseFirestore.getInstance().runTransaction(transaction -> {
-            com.google.firebase.firestore.DocumentSnapshot profile = transaction.get(user);
-            if (Boolean.TRUE.equals(profile.getBoolean("binderInitialized"))) return (Void) null;
-            String[] sets = {"Scarlet & Violet · 076/165", "OP02-013 · Alternate Art", "LOB-119 · Spell Card", "Mirrodin · Artifact"};
-            double[] averages = {1250, 8500, 2300, 650};
-            double[] changes = {8.4, 5.2, -3.1, 2.6};
-            java.util.ArrayList<com.google.firebase.firestore.DocumentSnapshot> existing = new java.util.ArrayList<>();
-            for (int i = 0; i < 4; i++) existing.add(transaction.get(user.collection("binder").document("demo_" + i)));
-            for (int i = 0; i < 4; i++) {
-                if (existing.get(i).exists()) continue;
-                java.util.Map<String, Object> data = new java.util.HashMap<>();
-                data.put("name", ARTWORK[i]);
-                data.put("set", sets[i]);
-                data.put("game", GAMES[i]);
-                data.put("condition", "Ungraded");
-                data.put("artwork", i);
-                data.put("photo", "");
-                data.put("demo", true);
-                data.put("average", averages[i]);
-                data.put("change", changes[i]);
-                transaction.set(existing.get(i).getReference(), data);
-            }
-            transaction.update(user, "binderInitialized", true);
-            return (Void) null;
-        });
     }
 
     private static String text(com.google.firebase.firestore.DocumentSnapshot doc, String key) {
@@ -90,22 +58,18 @@ public class BinderStore {
     }
     public static final String[] CONDITIONS = {"Ungraded", "PSA 9", "PSA 10"};
     public static final String[] GAMES = {"Pokémon", "One Piece", "Yu-Gi-Oh!", "Magic: The Gathering"};
-    public static final String[] ARTWORK = {"Snorlax ex", "Portgas D. Ace", "Pot of Greed", "Timesifter"};
-    public static final int[] IMAGES = {R.drawable.card_pokemon, R.drawable.card_one_piece, R.drawable.card_yugioh, R.drawable.card_mtg};
 
     public static class Card {
         public String id, name, set, game, condition, uri;
-        public int artwork;
         public boolean demo;
         public double average, change;
 
-        public Card(String id, String name, String set, String game, String condition, int artwork) {
+        public Card(String id, String name, String set, String game, String condition) {
             this.id = id;
             this.name = name;
             this.set = set;
             this.game = game;
             this.condition = condition;
-            this.artwork = artwork;
             uri = "";
         }
     }
@@ -127,7 +91,6 @@ public class BinderStore {
         data.put("set", card.set);
         data.put("game", card.game);
         data.put("condition", card.condition);
-        data.put("artwork", card.artwork);
         data.put("photo", photo);
         return com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(uid)
                 .collection("binder").document(card.id).set(data);
@@ -146,7 +109,7 @@ public class BinderStore {
     }
 
     public static void image(Context context, ImageView view, Card card) {
-        view.setImageResource(IMAGES[Math.max(0, Math.min(3, card.artwork))]);
+        view.setImageResource(R.drawable.deckbid_card_placeholder);
         view.setContentDescription(card.name);
         if (card.uri.isEmpty()) return;
         if (!card.uri.startsWith("content:") && !card.uri.startsWith("file:")) {

@@ -32,22 +32,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="fitCenter"
+                android:src="@drawable/deckbid_card_placeholder"
                 android:contentDescription="Selected card photo"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Card artwork"
-                android:textSize="14sp"
-                android:textColor="#FAF8F2"
-                android:layout_marginTop="16dp"/>
-            <Spinner
-                android:id="@+id/artwork_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/input_background"
-                android:popupBackground="#182334"
-                android:spinnerMode="dropdown"/>
             <Button
                 android:id="@+id/pick_photo_button"
                 android:layout_width="match_parent"
@@ -72,7 +58,7 @@
                 android:layout_marginTop="8dp"
                 android:padding="14dp"
                 android:background="@drawable/input_background"
-                android:hint="e.g. Snorlax ex"
+                android:hint="Enter card name"
                 android:textColor="#FAF8F2"
                 android:textColorHint="#95A1B3"
                 android:textSize="14sp"
@@ -108,7 +94,7 @@
                 android:layout_marginTop="8dp"
                 android:padding="14dp"
                 android:background="@drawable/input_background"
-                android:hint="e.g. Scarlet &amp; Violet · 076/165"
+                android:hint="Enter set or card number"
                 android:textColor="#FAF8F2"
                 android:textColorHint="#95A1B3"
                 android:textSize="14sp"
@@ -130,13 +116,6 @@
                 android:background="@drawable/input_background"
                 android:popupBackground="#182334"
                 android:spinnerMode="dropdown"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Auction values appear when matching auction history is available."
-                android:textSize="12sp"
-                android:textColor="#95A1B3"
-                android:layout_marginTop="16dp"/>
             <Button
                 android:id="@+id/save_card_button"
                 android:layout_width="match_parent"

@@ -90,7 +90,7 @@ public class HomeActivity extends Activity {
         }
 
         showTab(selectedTab);
-        com.google.android.gms.tasks.Tasks.whenAll(BinderStore.initialize(), AuctionStore.initialize(this))
+        AuctionStore.initialize(this)
                 .addOnCompleteListener(task -> {
                     if (isFinishing() || isDestroyed()) return;
                     if (!task.isSuccessful()) android.widget.Toast.makeText(this,
