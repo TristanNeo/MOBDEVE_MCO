@@ -8,17 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:paddingTop="16dp"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingBottom="16dp">
-        <ImageView
-            android:id="@+id/add_preview"
-            android:layout_width="match_parent"
-            android:layout_height="196dp"
-            android:layout_marginTop="12dp"
-            android:src="@drawable/deckbid_card_placeholder"
-            android:scaleType="fitCenter"
-            android:contentDescription="Card preview"/>
+        <ImageView style="@style/CardFormPreview" android:id="@+id/add_preview"/>
         <Button
             style="@style/CardFormSecondary"
             android:id="@+id/pick_photo_button"
@@ -43,5 +38,10 @@
             android:hint="Enter set"
             android:maxLength="80"/>
         <include layout="@layout/add_card_condition"/>
+        <Button
+            style="@style/CardFormPrimary"
+            android:id="@+id/submit_new_card"
+            android:layout_marginTop="18dp"
+            android:text="Add to Binder"/>
     </LinearLayout>
 </ScrollView>

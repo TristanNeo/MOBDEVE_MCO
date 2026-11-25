@@ -120,7 +120,7 @@ public class AuctionDetailsActivity extends Activity {
         ImageView image = findViewById(R.id.detail_auction_image);
         image.setAlpha(auction.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
         if (!auction.isPending(System.currentTimeMillis())) image.clearColorFilter();
-        label(R.id.detail_auction_time, countdown());
+        label(R.id.detail_auction_time, AuctionStore.countdown(auction, System.currentTimeMillis()));
         String status;
         if (auction.isPending(System.currentTimeMillis())) status = "Scheduled · opens " + date(auction.startsAt);
         else if (!active) status = auction.isOwned() ? (auction.history.isEmpty() ? "Your auction ended with no bids." : "Your card sold for " + AuctionStore.money(auction.currentBid)) : auction.isLeading() ? "You won this auction." : "This auction has ended.";
@@ -251,19 +251,6 @@ public class AuctionDetailsActivity extends Activity {
         View line = new View(this);
         line.setBackgroundColor(android.graphics.Color.parseColor("#293548"));
         parent.addView(line, new LinearLayout.LayoutParams(-1, dp(1)));
-    }
-
-    private String countdown() {
-        if (auction.isPending(System.currentTimeMillis())) return AuctionStore.timeLeft(auction);
-        long remaining = auction.endsAt - System.currentTimeMillis();
-        if (remaining <= 0) return "Ended";
-        long seconds = (remaining + 999) / 1000;
-        long hours = seconds / 3600;
-        long minutes = seconds % 3600 / 60;
-        long lastSeconds = seconds % 60;
-        if (hours >= 24) return String.format(Locale.US, "%dd %02d:%02d:%02d left", hours / 24, hours % 24, minutes, lastSeconds);
-        if (hours > 0) return String.format(Locale.US, "%dh %02dm %02ds left", hours, minutes, lastSeconds);
-        return String.format(Locale.US, "%dm %02ds left", minutes, lastSeconds);
     }
 
     private String date(long time) {

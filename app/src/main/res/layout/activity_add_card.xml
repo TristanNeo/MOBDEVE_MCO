@@ -55,17 +55,12 @@
         android:visibility="gone"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="10dp">
-        <Button
-            style="@style/CardFormSecondary"
-            android:id="@+id/new_card_button"
-            android:text="Card doesn’t exist? Add new"
-            android:visibility="gone"/>
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
         <Button
             style="@style/CardFormPrimary"
-            android:id="@+id/submit_new_card"
-            android:text="Add to Binder"
+            android:id="@+id/new_card_button"
+            android:text="Card doesn’t exist? Add new"
             android:visibility="gone"/>
     </LinearLayout>
 </LinearLayout>

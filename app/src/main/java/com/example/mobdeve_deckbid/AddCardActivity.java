@@ -11,7 +11,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -23,7 +23,6 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.ListenerRegistration;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.UUID;
 
 public class AddCardActivity extends Activity {
@@ -37,8 +36,8 @@ public class AddCardActivity extends Activity {
     private AuctionStore.CatalogCard selected;
     private EditText search;
     private ListView suggestions;
-    private ArrayAdapter<AuctionStore.CatalogCard> adapter;
-    private boolean selecting, reopenSuggestions;
+    private BaseAdapter adapter;
+    private boolean selecting, browsing;
     private Task<Void> pendingSave;
     private ListenerRegistration listener;
     private final Handler clock = new Handler(Looper.getMainLooper());
@@ -56,8 +55,9 @@ public class AddCardActivity extends Activity {
         cardId = state == null ? UUID.randomUUID().toString() : state.getString("card_id");
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
         ((TextView) findViewById(R.id.add_title)).setText(page == NEW_GAME || page == NEW_CARD ? "Add new card" : "Add to Binder");
+        boolean choosing = page == CHOOSE_GAME || page == NEW_GAME;
         FrameLayout body = findViewById(R.id.add_page);
-        if (page == CHOOSE_GAME || page == NEW_GAME) {
+        if (choosing) {
             getLayoutInflater().inflate(R.layout.add_card_games, body, true);
             int[] tiles = {R.id.select_pokemon, R.id.select_onepiece, R.id.select_yugioh, R.id.select_magic};
             for (int i = 0; i < tiles.length; i++) {
@@ -71,8 +71,16 @@ public class AddCardActivity extends Activity {
         logo.setImageResource(CardAppearance.logo(game));
         logo.setContentDescription(game);
         logo.setVisibility(View.VISIBLE);
-        findViewById(R.id.add_footer).setVisibility(View.VISIBLE);
+        findViewById(R.id.add_footer).setVisibility(page == SEARCH ? View.VISIBLE : View.GONE);
         getLayoutInflater().inflate(page == SEARCH ? R.layout.add_card_search : R.layout.add_card_new, body, true);
+        ImageView preview = findViewById(R.id.add_preview);
+        ViewGroup.LayoutParams previewSize = preview.getLayoutParams();
+        int windowHeight = getResources().getConfiguration().screenHeightDp;
+        if (windowHeight > 0) {
+            int cap = Math.round(windowHeight * 0.45f * getResources().getDisplayMetrics().density);
+            previewSize.height = Math.min(previewSize.height, cap);
+            preview.setLayoutParams(previewSize);
+        }
         if (page == SEARCH) bindSearch(state);
         else bindNewCard();
         bindGrades();
@@ -94,36 +102,57 @@ public class AddCardActivity extends Activity {
     private void bindSearch(Bundle state) {
         search = findViewById(R.id.card_catalog_search);
         suggestions = findViewById(R.id.card_suggestions);
-        adapter = new ArrayAdapter<AuctionStore.CatalogCard>(this, android.R.layout.simple_list_item_2,
-                android.R.id.text1, matches) {
+        adapter = new BaseAdapter() {
+            @Override public int getCount() { return matches.size(); }
+            @Override public AuctionStore.CatalogCard getItem(int position) { return matches.get(position); }
+            @Override public long getItemId(int position) { return position; }
             @Override public View getView(int position, View row, ViewGroup parent) {
                 if (row == null) row = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false);
                 AuctionItem item = getItem(position).artwork;
                 TextView name = row.findViewById(android.R.id.text1);
                 TextView set = row.findViewById(android.R.id.text2);
+                name.setSingleLine(true);
+                set.setSingleLine(true);
+                name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                set.setEllipsize(android.text.TextUtils.TruncateAt.END);
                 name.setText(item.name);
                 set.setText(item.set.isEmpty() ? "Set not recorded" : item.set);
                 return row;
             }
         };
         suggestions.setAdapter(adapter);
-        suggestions.setOnItemClickListener((parent, row, position, id) -> select(matches.get(position)));
-        if (state != null) search.setText(state.getString("query", ""));
+        suggestions.setOnItemClickListener((parent, row, position, id) -> {
+            AuctionStore.CatalogCard edition = (AuctionStore.CatalogCard) parent.getItemAtPosition(position);
+            if (edition != null) select(edition);
+        });
+        if (state != null) {
+            search.setText(state.getString("query", ""));
+            browsing = state.getBoolean("browsing");
+        }
         search.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             public void afterTextChanged(Editable s) { }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (selecting) return;
-                boolean hadSelection = selected != null;
-                selected = null;
+                if (selected != null) {
+                    selected = null;
+                    showSelection();
+                }
                 editionKey = "";
-                if (hadSelection) showSelection();
-                filterSuggestions();
+                browse();
             }
         });
-        search.setOnClickListener(v -> {
-            reopenSuggestions = true;
-            filterSuggestions();
+        search.setOnClickListener(v -> browse());
+        search.setOnFocusChangeListener((v, focused) -> { if (focused && editionKey.isEmpty()) browse(); });
+        search.setOnEditorActionListener((v, action, event) -> {
+            boolean done = action == android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+            boolean enter = event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == android.view.KeyEvent.ACTION_DOWN;
+            if ((done || enter) && matches.size() == 1) {
+                select(matches.get(0));
+                return true;
+            }
+            return false;
         });
         View addNew = findViewById(R.id.new_card_button);
         addNew.setVisibility(View.VISIBLE);
@@ -149,32 +178,57 @@ public class AddCardActivity extends Activity {
         filterSuggestions();
     }
 
-    private void filterSuggestions() {
-        String query = search.getText().toString().trim().toLowerCase(Locale.ROOT);
-        matches.clear();
-        if ((selected == null || reopenSuggestions) && !query.isEmpty()) {
-            for (AuctionStore.CatalogCard card : editions) {
-                if ((card.artwork.name + " " + card.artwork.set).toLowerCase(Locale.ROOT).contains(query)) matches.add(card);
+    private void browse() {
+        browsing = true;
+        filterSuggestions();
+        if (!matches.isEmpty()) suggestions.post(() -> {
+            if (suggestions.isShown() && search.hasFocus()) {
+                int firstRow = suggestions.getHeight() / Math.min(3, Math.max(1, matches.size()));
+                suggestions.requestRectangleOnScreen(new android.graphics.Rect(0, 0, suggestions.getWidth(), firstRow), false);
             }
-        }
+        });
+    }
+
+    private void filterSuggestions() {
+        String query = search.getText().toString();
+        matches.clear();
+        if (browsing) matches.addAll(AuctionStore.searchCatalog(editions, query));
         adapter.notifyDataSetChanged();
         suggestions.setVisibility(matches.isEmpty() ? View.GONE : View.VISIBLE);
-        suggestions.setSelection(0);
+        findViewById(R.id.card_search_empty).setVisibility(
+                browsing && !query.trim().isEmpty() && matches.isEmpty() ? View.VISIBLE : View.GONE);
+        if (matches.isEmpty()) return;
+        int rows = Math.min(matches.size(), 3);
+        View row = adapter.getView(0, null, suggestions);
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(search.getWidth(), View.MeasureSpec.EXACTLY);
+        int preferredHeight = row.getLayoutParams().height;
+        int heightSpec = preferredHeight > 0 ? View.MeasureSpec.makeMeasureSpec(preferredHeight, View.MeasureSpec.EXACTLY)
+                : View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        row.measure(widthSpec, heightSpec);
+        ViewGroup.LayoutParams params = suggestions.getLayoutParams();
+        int height = rows * row.getMeasuredHeight() + (rows - 1) * suggestions.getDividerHeight()
+                + suggestions.getPaddingTop() + suggestions.getPaddingBottom();
+        if (height != params.height) {
+            params.height = height;
+            suggestions.setLayoutParams(params);
+        }
     }
 
     private void select(AuctionStore.CatalogCard card) {
         selected = card;
-        reopenSuggestions = false;
+        browsing = false;
         editionKey = card.key;
         selecting = true;
         search.setText(card.artwork.name);
         search.setSelection(search.length());
+        setGrade(card.artwork.condition);
         selecting = false;
-        if (grade.equals(card.artwork.condition)) showSelection();
-        else setGrade(card.artwork.condition);
+        showSelection();
         filterSuggestions();
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(search.getWindowToken(), 0);
-        ((android.widget.ScrollView) findViewById(R.id.card_search_scroll)).scrollTo(0, 0);
+        search.clearFocus();
+        android.widget.ScrollView scroll = findViewById(R.id.card_search_scroll);
+        scroll.post(() -> scroll.smoothScrollTo(0, 0));
     }
 
     private void showSelection() {
@@ -200,7 +254,6 @@ public class AddCardActivity extends Activity {
             startActivityForResult(intent, PICK_PHOTO);
         });
         View submit = findViewById(R.id.submit_new_card);
-        submit.setVisibility(View.VISIBLE);
         submit.setOnClickListener(v -> {
             EditText name = findViewById(R.id.add_name);
             String title = name.getText().toString().trim();
@@ -229,7 +282,7 @@ public class AddCardActivity extends Activity {
         group.setOnCheckedChangeListener((g, checked) -> {
             for (int i = 0; i < gradeIds.length; i++) if (gradeIds[i] == checked) grade = BinderStore.CONDITIONS[i];
             markGrade();
-            if (selected != null) showSelection();
+            if (!selecting && selected != null) showSelection();
         });
     }
 
@@ -243,9 +296,8 @@ public class AddCardActivity extends Activity {
     private void markGrade() {
         for (int i = 0; i < gradeIds.length; i++) {
             RadioButton chip = findViewById(gradeIds[i]);
-            String label = BinderStore.CONDITIONS[i];
-            chip.setAlpha(chip.isChecked() ? 1f : 0.72f);
-            chip.setText(chip.isChecked() ? "✓ " + label : label);
+            chip.setAlpha(chip.isChecked() ? 1f : 0.62f);
+            chip.setElevation(chip.isChecked() ? 3 * getResources().getDisplayMetrics().density : 0f);
         }
     }
 
@@ -308,6 +360,9 @@ public class AddCardActivity extends Activity {
         state.putString("grade", grade);
         state.putString("edition", editionKey);
         state.putString("photo", photoUri);
-        if (search != null) state.putString("query", search.getText().toString());
+        if (search != null) {
+            state.putString("query", search.getText().toString());
+            state.putBoolean("browsing", browsing);
+        }
     }
 }

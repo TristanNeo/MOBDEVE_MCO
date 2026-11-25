@@ -103,13 +103,11 @@ public class BinderStore {
         return String.format(Locale.US, "₱%,.0f", amount);
     }
 
-    public static String status(Context context, Card card) {
-        AuctionItem listing = AuctionStore.find(context, card.auctionId);
+    static String status(AuctionItem listing, long now) {
         if (listing == null) return "";
-        long now = System.currentTimeMillis();
-        if (listing.isPending(now)) return "Scheduled · " + AuctionStore.timeLeft(listing);
-        if (listing.isActive(now)) return "Being auctioned · " + AuctionStore.timeLeft(listing);
-        return listing.history.isEmpty() ? "Auction ended · no bids" : "Sold";
+        if (listing.isPending(now)) return "Scheduled";
+        if (listing.isActive(now)) return "Live Auction";
+        return listing.history.isEmpty() ? "Ended · no bids" : "Sold";
     }
 
     public static void image(Context context, ImageView view, Card card) {

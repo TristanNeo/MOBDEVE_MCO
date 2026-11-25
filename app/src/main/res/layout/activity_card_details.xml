@@ -48,50 +48,72 @@
                         android:textSize="20sp"
                         android:textColor="#FAF8F2"
                         android:textStyle="bold"/>
-                    <ImageView
-                        android:id="@+id/detail_game_logo"
-                        android:layout_width="80dp"
-                        android:layout_height="30dp"
-                        android:layout_marginTop="6dp"
-                        android:scaleType="fitStart"/>
                     <TextView
                         android:id="@+id/detail_set"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="13sp"
+                        android:layout_marginTop="2dp"
+                        android:textSize="14sp"
                         android:textColor="#BAC5D3"/>
-                    <TextView
-                        android:id="@+id/detail_condition"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:elevation="4dp"
-                        android:textSize="13sp"/>
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:baselineAligned="false"
+                        android:clipToPadding="false">
+                        <ImageView
+                            android:id="@+id/detail_game_logo"
+                            android:layout_width="68dp"
+                            android:layout_height="32dp"
+                            android:scaleType="fitCenter"/>
+                        <TextView
+                            android:id="@+id/detail_condition"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:elevation="3dp"
+                            android:textSize="13sp"/>
+                    </LinearLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:background="#293548"/>
                     <Button
                         android:id="@+id/card_auction_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="end"
+                        android:layout_gravity="center_horizontal"
                         android:minWidth="0dp"
                         android:minHeight="48dp"
                         android:layout_marginTop="6dp"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
-                        android:background="@drawable/card_auction_action"
+                        android:background="@drawable/button_gold"
                         android:backgroundTint="@null"
                         android:text="Auction this card"
                         android:textSize="13sp"
-                        android:textColor="#FAF8F2"
+                        android:textStyle="bold"
+                        android:textColor="#0B1220"
                         android:textAllCaps="false"/>
                     <TextView
                         android:id="@+id/card_auction_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:layout_marginTop="6dp"
-                        android:gravity="end"
-                        android:textColor="#DCC58B"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#EFCD77"
+                        android:textSize="14sp"
+                        android:visibility="gone"/>
+                    <TextView
+                        android:id="@+id/card_auction_clock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#D6DCE4"
                         android:textSize="13sp"
                         android:visibility="gone"/>
 

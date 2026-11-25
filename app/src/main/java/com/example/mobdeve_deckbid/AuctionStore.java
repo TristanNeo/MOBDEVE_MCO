@@ -60,6 +60,7 @@ public class AuctionStore {
     static final class CatalogCard {
         final String key;
         AuctionItem artwork;
+        private String searchText;
         private final Map<String, AuctionItem> grades = new HashMap<>();
 
         CatalogCard(String key) { this.key = key; }
@@ -72,7 +73,10 @@ public class AuctionStore {
         }
 
         void include(AuctionItem item) {
-            if (prefer(item, artwork)) artwork = item;
+            if (prefer(item, artwork)) {
+                artwork = item;
+                searchText = searchable(item.name + " " + item.set);
+            }
             if (prefer(item, grades.get(item.condition))) grades.put(item.condition, item);
         }
 
@@ -97,6 +101,27 @@ public class AuctionStore {
         ArrayList<CatalogCard> result = new ArrayList<>(editions.values());
         result.sort(java.util.Comparator.comparing((CatalogCard c) -> c.artwork.name, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(c -> c.artwork.set, String.CASE_INSENSITIVE_ORDER));
+        return result;
+    }
+
+    private static String searchable(String value) {
+        String folded = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+                .toLowerCase(Locale.ROOT);
+        return folded.replaceAll("\\p{M}+", "").replaceAll("[^\\p{L}\\p{N}]+", " ").trim();
+    }
+
+    static ArrayList<CatalogCard> searchCatalog(List<CatalogCard> editions, String input) {
+        String query = searchable(input);
+        if (query.isEmpty()) return new ArrayList<>(editions);
+        String[] words = query.split(" ");
+        ArrayList<CatalogCard> result = new ArrayList<>();
+        for (CatalogCard edition : editions) {
+            boolean match = true;
+            for (String word : words) {
+                if (!edition.searchText.contains(word)) { match = false; break; }
+            }
+            if (match) result.add(edition);
+        }
         return result;
     }
 
@@ -338,6 +363,20 @@ public class AuctionStore {
         } else view.clearColorFilter();
     }
     public static String money(long value) { return String.format(Locale.US, "₱%,d", value); }
+    static String countdown(AuctionItem listing, long now) {
+        boolean pending = listing.isPending(now);
+        long remaining = (pending ? listing.startsAt : listing.endsAt) - now;
+        if (remaining <= 0) return "Ended";
+        long seconds = (remaining + 999) / 1000;
+        long hours = seconds / 3600;
+        long minutes = seconds / 60 % 60;
+        String time;
+        if (hours >= 24) time = String.format(Locale.US, "%dd %02d:%02d:%02d", hours / 24, hours % 24, minutes, seconds % 60);
+        else if (hours > 0) time = String.format(Locale.US, "%dh %02dm %02ds", hours, minutes, seconds % 60);
+        else time = String.format(Locale.US, "%dm %02ds", minutes, seconds % 60);
+        return pending ? "Opens in " + time : time + " left";
+    }
+
     public static String timeLeft(AuctionItem a) {
         long now = System.currentTimeMillis();
         boolean pending = a.isPending(now);

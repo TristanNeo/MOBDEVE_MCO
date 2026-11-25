@@ -50,4 +50,11 @@
         <item name="android:background">@drawable/binder_panel</item>
         <item name="android:foreground">?android:attr/selectableItemBackground</item>
     </style>
+    <style name="CardFormPreview">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">300dp</item>
+        <item name="android:src">@drawable/deckbid_card_placeholder</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:contentDescription">Card preview</item>
+    </style>
 </resources>

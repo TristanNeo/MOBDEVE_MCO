@@ -27,6 +27,9 @@ public class BinderController {
         search = activity.findViewById(R.id.binder_search);
         binder = activity.findViewById(R.id.binder_content);
         View.OnLayoutChangeListener resize = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> updateHeight();
+        grid.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft) grid.post(this::sizeTiles);
+        });
         activity.findViewById(R.id.home_scroll).addOnLayoutChangeListener(resize);
         activity.findViewById(R.id.page_title).addOnLayoutChangeListener(resize);
         activity.findViewById(R.id.add_card_button).setOnClickListener(v -> activity.startActivity(new Intent(activity, AddCardActivity.class)));
@@ -54,7 +57,7 @@ public class BinderController {
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
             params.height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(count % 2, 1f);
+            params.columnSpec = GridLayout.spec(count % 2, GridLayout.START);
             params.rowSpec = GridLayout.spec(count / 2);
             int gap = Math.round(6 * activity.getResources().getDisplayMetrics().density);
             params.setMargins(count % 2 == 0 ? 0 : gap, 0, count % 2 == 0 ? gap : 0, gap * 2);
@@ -75,6 +78,7 @@ public class BinderController {
             grid.addView(tile);
             count++;
         }
+        sizeTiles();
         updateStatuses();
         boolean empty = cards.isEmpty();
         search.setVisibility(empty ? View.GONE : View.VISIBLE);
@@ -90,17 +94,42 @@ public class BinderController {
         binder.post(this::updateHeight);
     }
 
+    private void sizeTiles() {
+        if (grid.getChildCount() == 0) return;
+        GridLayout.LayoutParams first = (GridLayout.LayoutParams) grid.getChildAt(0).getLayoutParams();
+        int available = grid.getWidth() - grid.getPaddingLeft() - grid.getPaddingRight();
+        int width = available / 2 - first.leftMargin - first.rightMargin;
+        if (width <= 0) return;
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int height = 0;
+        for (int i = 0; i < grid.getChildCount(); i++) {
+            View tile = grid.getChildAt(i);
+            tile.measure(widthSpec, heightSpec);
+            height = Math.max(height, tile.getMeasuredHeight());
+        }
+        for (int i = 0; i < grid.getChildCount(); i++) {
+            View tile = grid.getChildAt(i);
+            GridLayout.LayoutParams params = (GridLayout.LayoutParams) tile.getLayoutParams();
+            if (params.width == width && params.height == height) continue;
+            params.width = width;
+            params.height = height;
+            tile.setLayoutParams(params);
+        }
+    }
+
     public void updateStatuses() {
         for (int i = 0; i < grid.getChildCount(); i++) {
             View tile = grid.getChildAt(i);
             BinderStore.Card card = (BinderStore.Card) tile.getTag();
             if (card == null) continue;
             TextView status = tile.findViewById(R.id.binder_auction_status);
-            String label = BinderStore.status(activity, card);
+            AuctionItem listing = AuctionStore.find(activity, card.auctionId);
+            long now = System.currentTimeMillis();
+            String label = BinderStore.status(listing, now);
             status.setText(label);
             status.setVisibility(label.isEmpty() ? View.GONE : View.VISIBLE);
-            AuctionItem listing = AuctionStore.find(activity, card.auctionId);
-            tile.setAlpha(listing != null && listing.isPending(System.currentTimeMillis()) ? 0.55f : 1f);
+            tile.setAlpha(listing != null && listing.isPending(now) ? 0.55f : 1f);
             ((TextView) tile.findViewById(R.id.card_value)).setText(AuctionStore.average(activity, card));
         }
     }
