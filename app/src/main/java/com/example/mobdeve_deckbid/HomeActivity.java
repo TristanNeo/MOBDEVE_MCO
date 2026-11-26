@@ -6,6 +6,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class HomeActivity extends Activity {
 
@@ -260,13 +265,26 @@ public class HomeActivity extends Activity {
         }
         super.onSaveInstanceState(outState);
     }
+
+    private static String formatBirthday(String birthday) {
+        if (birthday == null || birthday.isEmpty()) return "";
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        format.setLenient(false);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        ParsePosition position = new ParsePosition(0);
+        Date date = format.parse(birthday, position);
+        if (date == null || position.getIndex() != birthday.length()) return birthday;
+        format.applyPattern("MMM d, yyyy");
+        return format.format(date);
+    }
+
     private void refreshProfile() {
         try (AccountStore store = new AccountStore(this)) { user = store.current(); }
         if (user == null) return;
         ((TextView) findViewById(R.id.home_username)).setText(user.username);
         ((TextView) findViewById(R.id.profile_username)).setText(user.username);
         ((TextView) findViewById(R.id.profile_email)).setText(user.email);
-        ((TextView) findViewById(R.id.profile_birthday)).setText(user.birthday);
+        ((TextView) findViewById(R.id.profile_birthday)).setText(formatBirthday(user.birthday));
         String initial = user.username.substring(0, 1).toUpperCase(java.util.Locale.ROOT);
         ((TextView) findViewById(R.id.header_initial)).setText(initial);
         ((TextView) findViewById(R.id.profile_initial)).setText(initial);

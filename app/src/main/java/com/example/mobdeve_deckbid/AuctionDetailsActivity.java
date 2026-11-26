@@ -255,7 +255,8 @@ public class AuctionDetailsActivity extends Activity {
             TextView cell = new TextView(this);
             cell.setText(values[i]);
             cell.setTextSize(heading ? 10 : 11);
-            cell.setPadding(dp(5), dp(8), dp(5), dp(8));
+            int startPadding = i == 2 ? dp(20) : dp(5);
+            cell.setPaddingRelative(startPadding, dp(8), dp(5), dp(8));
             cell.setTextColor(android.graphics.Color.parseColor(heading ? "#95A1B3" : "#FAF8F2"));
             if (!heading && i == 1) cell.setTypeface(null, android.graphics.Typeface.BOLD);
             if (i == 0) cell.setMaxEms(10);
