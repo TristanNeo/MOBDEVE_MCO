@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:background="@color/background">
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="56dp"
+        android:text="‹  Active Auctions"
+        android:contentDescription="Back from Active Auctions"
+        android:background="?android:attr/selectableItemBackground"
+        android:textColor="@color/ivory"
+        android:textAllCaps="false"
+        android:textSize="20sp"/>
+    <include layout="@layout/view_auction_roles"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ListView
+            android:id="@+id/active_auction_rows"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"/>
+        <TextView
+            android:id="@+id/active_auction_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textColor="@color/muted"
+            android:visibility="gone"/>
+    </FrameLayout>
+</LinearLayout>

@@ -78,12 +78,21 @@
         android:visibility="gone" />
             <include
         android:id="@+id/auctions_content" layout="@layout/view_auctions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:visibility="gone" />
             <include
         android:id="@+id/watchlist_content" layout="@layout/view_watchlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:visibility="gone" />
             <include
         android:id="@+id/binder_content" layout="@layout/view_binder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:visibility="gone" />
             <include layout="@layout/view_profile"
         android:id="@+id/profile_content"
@@ -126,10 +135,9 @@
         android:gravity="center"
         android:drawablePadding="6dp"
         android:text="Home"
-        android:textColor="#D4A63A"
+        android:textColor="#95A1B3"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:onClick="selectTab" />
@@ -145,7 +153,6 @@
         android:textColor="#95A1B3"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:onClick="selectTab" />
@@ -161,7 +168,6 @@
         android:textColor="#95A1B3"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:onClick="selectTab" />
@@ -177,7 +183,6 @@
         android:textColor="#95A1B3"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:onClick="selectTab" />
@@ -193,7 +198,6 @@
         android:textColor="#95A1B3"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"
-        android:foreground="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:onClick="selectTab" />

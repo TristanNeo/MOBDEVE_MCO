@@ -179,9 +179,7 @@ public class HomeActivity extends Activity {
         for (int i = 0; i < tabs.length; i++) {
             boolean selected = i == position;
 
-            int color = android.graphics.Color.parseColor(
-                    selected ? "#D4A63A" : "#95A1B3"
-            );
+            int color = getColor(selected ? R.color.gold : R.color.muted);
 
             android.graphics.drawable.Drawable icon =
                     getDrawable(icons[i]).mutate();

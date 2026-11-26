@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
@@ -89,8 +91,21 @@ public class AuctionDetailsActivity extends Activity {
     private void render() {
         AuctionStore.image(this, (ImageView) findViewById(R.id.detail_auction_image), auction);
         label(R.id.detail_auction_name, auction.name);
-        label(R.id.detail_auction_game, auction.game);
-        CardAppearance.condition(findViewById(R.id.detail_auction_grade), auction.condition);
+        TextView set = findViewById(R.id.detail_auction_set);
+        set.setText(auction.set);
+        set.setVisibility(auction.set.isEmpty() ? View.GONE : View.VISIBLE);
+        ImageView logo = findViewById(R.id.detail_auction_game_logo);
+        int logoId = CardAppearance.logo(auction.game);
+        logo.setImageResource(logoId);
+        logo.setContentDescription(auction.game);
+        logo.setVisibility(logoId == 0 ? View.GONE : View.VISIBLE);
+        TextView condition = findViewById(R.id.detail_auction_grade);
+        CardAppearance.condition(condition, auction.condition);
+        condition.setShadowLayer(dp(2), 0, 0, (condition.getCurrentTextColor() & 0x00FFFFFF) | 0x66000000);
+        if (android.os.Build.VERSION.SDK_INT >= 28) {
+            condition.setOutlineSpotShadowColor(condition.getCurrentTextColor());
+            condition.setOutlineAmbientShadowColor(condition.getCurrentTextColor());
+        }
         label(R.id.detail_auction_seller, "by " + auction.seller);
         label(R.id.detail_auction_bid, AuctionStore.money(auction.currentBid));
         label(R.id.detail_auction_count, auction.history.size() + " bids");
@@ -101,16 +116,17 @@ public class AuctionDetailsActivity extends Activity {
         heart.setVisibility(auction.isOwned() ? View.GONE : View.VISIBLE);
         heart.setImageResource(auction.saved ? R.drawable.auction_heart_saved : R.drawable.auction_heart);
         heart.setContentDescription(auction.saved ? "Remove from watchlist" : "Save to watchlist");
-        LinearLayout summary = findViewById(R.id.auction_summary);
+        SimpleDateFormat timestamp = new SimpleDateFormat("MMM d, yyyy · h:mm:ss a", Locale.US);
+        TableLayout summary = findViewById(R.id.auction_summary);
         summary.removeAllViews();
         summaryRow(summary, "Total bids", String.valueOf(auction.history.size()));
-        summaryRow(summary, "Start date", date(auction.startsAt));
-        summaryRow(summary, "End date", date(auction.endsAt));
-        LinearLayout history = findViewById(R.id.auction_history);
+        summaryRow(summary, "Start date", timestamp.format(new Date(auction.startsAt)));
+        summaryRow(summary, "End date", timestamp.format(new Date(auction.endsAt)));
+        TableLayout history = findViewById(R.id.auction_history);
         history.removeAllViews();
         historyRow(history, "Bidder", "Amount", "Time", true);
         for (AuctionItem.Bid bid : auction.history) {
-            historyRow(history, bid.bidder, AuctionStore.money(bid.amount), new SimpleDateFormat("MMM d, HH:mm", Locale.US).format(new Date(bid.time)), false);
+            historyRow(history, bid.bidder, AuctionStore.money(bid.amount), timestamp.format(new Date(bid.time)), false);
         }
         updateStatus();
     }
@@ -207,33 +223,34 @@ public class AuctionDetailsActivity extends Activity {
         Toast.makeText(this, "Could not save: " + e.getMessage(), Toast.LENGTH_LONG).show();
     }
 
-    private void summaryRow(LinearLayout parent, String title, String value) {
-        LinearLayout row = new LinearLayout(this);
+    private void summaryRow(TableLayout parent, String title, String value) {
+        TableRow row = new TableRow(this);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
         row.setPadding(0, dp(9), 0, dp(9));
         TextView left = new TextView(this);
         left.setText(title);
         left.setTextSize(12);
         left.setTextColor(android.graphics.Color.parseColor("#95A1B3"));
-        row.addView(left, new LinearLayout.LayoutParams(0, -2, 1));
+        left.setPadding(0, 0, dp(12), 0);
+        row.addView(left);
         TextView right = new TextView(this);
         right.setText(value);
+        right.setSingleLine(true);
         right.setTextSize(13);
         right.setTypeface(null, android.graphics.Typeface.BOLD);
         right.setGravity(android.view.Gravity.END);
         right.setTextColor(android.graphics.Color.parseColor("#FAF8F2"));
-        row.addView(right, new LinearLayout.LayoutParams(0, -2, 1.6f));
+        row.addView(right);
         parent.addView(row);
         divider(parent);
     }
 
-    private void historyRow(LinearLayout parent, String bidder, String amount, String time, boolean heading) {
-        LinearLayout row = new LinearLayout(this);
+    private void historyRow(TableLayout parent, String bidder, String amount, String time, boolean heading) {
+        TableRow row = new TableRow(this);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(dp(44));
         if (heading) row.setBackgroundColor(android.graphics.Color.parseColor("#182B3E"));
         String[] values = {bidder, amount, time};
-        float[] weights = {1.3f, 1f, 1.1f};
         for (int i = 0; i < values.length; i++) {
             TextView cell = new TextView(this);
             cell.setText(values[i]);
@@ -241,7 +258,10 @@ public class AuctionDetailsActivity extends Activity {
             cell.setPadding(dp(5), dp(8), dp(5), dp(8));
             cell.setTextColor(android.graphics.Color.parseColor(heading ? "#95A1B3" : "#FAF8F2"));
             if (!heading && i == 1) cell.setTypeface(null, android.graphics.Typeface.BOLD);
-            row.addView(cell, new LinearLayout.LayoutParams(0, -2, weights[i]));
+            if (i == 0) cell.setMaxEms(10);
+            else cell.setSingleLine(true);
+            if (i == 2) cell.setGravity(android.view.Gravity.END);
+            row.addView(cell);
         }
         parent.addView(row);
         divider(parent);
@@ -254,7 +274,7 @@ public class AuctionDetailsActivity extends Activity {
     }
 
     private String date(long time) {
-        return new SimpleDateFormat("MMM d, yyyy · HH:mm", Locale.US).format(new Date(time));
+        return new SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.US).format(new Date(time));
     }
 
     private int dp(int value) {

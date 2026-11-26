@@ -1,5 +1,9 @@
 package com.example.mobdeve_deckbid;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.view.View;
+import android.widget.RadioGroup;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -7,6 +11,37 @@ import android.widget.TextView;
 
 final class CardAppearance {
     private CardAppearance() { }
+
+    static void roleCounts(RadioGroup roles, ActiveAuctions active) {
+        ((TextView) roles.findViewById(R.id.home_selling)).setText("Selling (" + active.selling.size() + ")");
+        ((TextView) roles.findViewById(R.id.home_bidding)).setText("Bidding (" + active.bidding.size() + ")");
+    }
+
+    static TextView bindActiveRow(Activity activity, View view, AuctionItem a) {
+        view.findViewById(R.id.auction_save).setVisibility(View.GONE);
+        view.findViewById(R.id.auction_chevron).setVisibility(View.VISIBLE);
+        return bindAuction(activity, view, a);
+    }
+
+    static TextView bindAuction(Activity activity, View view, AuctionItem a) {
+        AuctionStore.image(activity, view.findViewById(R.id.auction_image), a);
+        ((TextView) view.findViewById(R.id.auction_name)).setText(a.name);
+        ((TextView) view.findViewById(R.id.auction_game)).setText(a.game);
+        CardAppearance.condition(view.findViewById(R.id.auction_grade), a.condition);
+        ((TextView) view.findViewById(R.id.auction_bid)).setText(AuctionStore.money(a.currentBid));
+        boolean pending = a.isPending(System.currentTimeMillis());
+        view.setAlpha(pending ? 0.55f : 1f);
+        ((TextView) view.findViewById(R.id.auction_bid_count)).setText(pending ? "Scheduled" : a.history.size() + " bids");
+        TextView time = view.findViewById(R.id.auction_time);
+        time.setText(AuctionStore.timeLeft(a));
+        time.setTag(a);
+        view.setOnClickListener(v -> {
+            Intent intent = new Intent(activity, AuctionDetailsActivity.class);
+            intent.putExtra("auction_id", a.id);
+            activity.startActivity(intent);
+        });
+        return time;
+    }
 
     static int logo(String game) {
         switch (game) {

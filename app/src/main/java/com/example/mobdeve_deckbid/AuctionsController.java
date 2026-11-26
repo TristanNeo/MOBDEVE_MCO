@@ -9,7 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.Space;
+import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -55,6 +56,18 @@ public class AuctionsController {
         roles.check(R.id.home_selling);
         roles.setOnCheckedChangeListener((group, checked) -> {
             if (auctions != null) renderDashboard();
+        });
+        activity.findViewById(R.id.home_show_more).setOnClickListener(v -> {
+            ActiveAuctions active = new ActiveAuctions(AuctionStore.load(activity), System.currentTimeMillis());
+            if (!active.canExpand()) {
+                refresh();
+                return;
+            }
+            boolean bidding = roles.getCheckedRadioButtonId() == R.id.home_bidding;
+            if (active.items(bidding).size() < ActiveAuctions.PREVIEW_LIMIT) bidding = !bidding;
+            Intent intent = new Intent(activity, ActiveAuctionsActivity.class);
+            intent.putExtra(ActiveAuctionsActivity.EXTRA_BIDDING, bidding);
+            activity.startActivity(intent);
         });
         activity.findViewById(R.id.home_binder_stat).setOnClickListener(v -> activity.openTab(3));
         activity.findViewById(R.id.home_watch_stat).setOnClickListener(v -> activity.openTab(1));
@@ -162,15 +175,29 @@ public class AuctionsController {
         activity.findViewById(R.id.my_auctions_empty).setVisibility(status == 0 && owned.isEmpty() ? View.VISIBLE : View.GONE);
         for (int i = 0; i < filtered.size(); i++) {
             View tile = activity.getLayoutInflater().inflate(R.layout.item_auction_card, grid, false);
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0; params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(i % 2, 1f); params.rowSpec = GridLayout.spec(i / 2);
-            params.setMargins(i % 2 == 0 ? 0 : dp(5), 0, i % 2 == 0 ? dp(5) : 0, dp(10));
-            tile.setLayoutParams(params); bindCard(tile, filtered.get(i)); grid.addView(tile);
+            grid.addView(tile, tileParams(i));
+            bindCard(tile, filtered.get(i));
+        }
+        if (filtered.size() % 2 == 1) {
+            Space unusedColumn = new Space(activity);
+            GridLayout.LayoutParams params = tileParams(filtered.size());
+            params.height = 0;
+            grid.addView(unusedColumn, params);
         }
         TextView title = activity.findViewById(R.id.live_auctions_title);
         title.setText(status == 1 ? "Your active bids" : status == 2 ? "Your wins" : "Live Auctions");
         activity.findViewById(R.id.auction_empty).setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private GridLayout.LayoutParams tileParams(int index) {
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+        int column = index % 2;
+        params.width = 0;
+        params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        params.columnSpec = GridLayout.spec(column, GridLayout.FILL, 1f);
+        params.rowSpec = GridLayout.spec(index / 2);
+        params.setMargins(column == 0 ? 0 : dp(5), 0, column == 0 ? dp(5) : 0, dp(10));
+        return params;
     }
 
     private void removeClocks(android.view.ViewGroup group) {
@@ -182,18 +209,7 @@ public class AuctionsController {
     }
 
     private void bindCard(View view, AuctionItem a) {
-        AuctionStore.image(activity, (ImageView) view.findViewById(R.id.auction_image), a);
-        ((TextView) view.findViewById(R.id.auction_name)).setText(a.name);
-        ((TextView) view.findViewById(R.id.auction_game)).setText(a.game);
-        CardAppearance.condition(view.findViewById(R.id.auction_grade), a.condition);
-        ((TextView) view.findViewById(R.id.auction_bid)).setText(AuctionStore.money(a.currentBid));
-        boolean pending = a.isPending(System.currentTimeMillis());
-        view.setAlpha(pending ? 0.55f : 1f);
-        ((TextView) view.findViewById(R.id.auction_bid_count)).setText(pending ? "Scheduled" : a.history.size() + " bids");
-        TextView time = view.findViewById(R.id.auction_time);
-        time.setText(AuctionStore.timeLeft(a));
-        time.setTag(a);
-        clocks.add(time);
+        clocks.add(CardAppearance.bindAuction(activity, view, a));
         ImageButton heart = view.findViewById(R.id.auction_save);
         heart.setImageResource(a.saved ? R.drawable.auction_heart_saved : R.drawable.auction_heart);
         heart.setContentDescription(a.saved ? "Remove from watchlist" : "Save to watchlist");
@@ -207,49 +223,40 @@ public class AuctionsController {
                 refresh();
             });
         });
-        view.setOnClickListener(v -> {
-            Intent intent = new Intent(activity, AuctionDetailsActivity.class);
-            intent.putExtra("auction_id", a.id);
-            activity.startActivity(intent);
-        });
     }
 
     private void renderDashboard() {
-        int saved = 0, bidding = 0, won = 0;
+        int saved = 0, won = 0;
         long now = System.currentTimeMillis();
-        ArrayList<AuctionItem> own = new ArrayList<>(), bids = new ArrayList<>();
+        ActiveAuctions active = new ActiveAuctions(auctions, now);
         for (AuctionItem a : auctions) {
             if (a.saved) saved++;
-            if (a.isOwned() && a.isActive(now)) own.add(a);
-            if (!a.isOwned() && a.hasBid() && a.isActive(now)) bids.add(a);
-            if (a.isActive(now)) {
-                if (a.hasBid()) bidding++;
-            } else if (a.endsAt <= now && a.isLeading()) won++;
+            if (a.endsAt <= now && a.isLeading()) won++;
         }
         ((TextView) activity.findViewById(R.id.home_binder_stat)).setText(BinderStore.load(activity).size() + "\nCards");
         ((TextView) activity.findViewById(R.id.home_watch_stat)).setText(saved + "\nSaved");
-        ((TextView) activity.findViewById(R.id.home_bids_stat)).setText(bidding + "\nBidding");
+        ((TextView) activity.findViewById(R.id.home_bids_stat)).setText(active.bidding.size() + "\nBidding");
         ((TextView) activity.findViewById(R.id.home_won_stat)).setText(won + "\nWon");
         int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
         ((TextView) activity.findViewById(R.id.home_greeting)).setText(hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,");
-        boolean selling = ((RadioGroup) activity.findViewById(R.id.home_auction_roles)).getCheckedRadioButtonId() == R.id.home_selling;
-        ((TextView) activity.findViewById(R.id.home_selling)).setText("Selling (" + own.size() + ")");
-        ((TextView) activity.findViewById(R.id.home_bidding)).setText("Bidding (" + bids.size() + ")");
-        ArrayList<AuctionItem> items = selling ? own : bids;
-        items.sort(Comparator.comparingLong(a -> a.endsAt));
+        RadioGroup roles = activity.findViewById(R.id.home_auction_roles);
+        boolean bidding = roles.getCheckedRadioButtonId() == R.id.home_bidding;
+        CardAppearance.roleCounts(roles, active);
+        activity.findViewById(R.id.home_show_more).setVisibility(active.canExpand() ? View.VISIBLE : View.GONE);
         LinearLayout list = activity.findViewById(R.id.home_active_list);
         removeClocks(list);
         list.removeAllViews();
-        for (AuctionItem a : items) {
+        for (AuctionItem item : active.preview(bidding)) {
             View row = activity.getLayoutInflater().inflate(R.layout.item_auction_row, list, false);
-            bindCard(row, a);
-            row.findViewById(R.id.auction_save).setVisibility(View.GONE);
-            row.findViewById(R.id.auction_chevron).setVisibility(View.VISIBLE);
+            clocks.add(CardAppearance.bindActiveRow(activity, row, item));
             list.addView(row);
         }
-        if (items.isEmpty()) {
-            TextView empty = new TextView(activity); empty.setText(selling ? "You have no live listings." : "You have no bids on live auctions.");
-            empty.setTextColor(android.graphics.Color.parseColor("#95A1B3")); empty.setPadding(0, dp(8), 0, dp(8));
+        if (active.items(bidding).isEmpty()) {
+            TextView empty = new TextView(activity);
+            empty.setText(ActiveAuctions.emptyMessage(bidding));
+            empty.setTextColor(activity.getColor(R.color.muted));
+            empty.setGravity(Gravity.CENTER);
+            empty.setPadding(0, dp(8), 0, dp(8));
             list.addView(empty);
         }
     }

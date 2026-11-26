@@ -94,7 +94,9 @@ public class CardDetailsActivity extends Activity {
         TextView status = findViewById(R.id.card_auction_status);
         String label = BinderStore.status(listing, now);
         status.setText(label);
-        status.setVisibility(label.isEmpty() ? View.GONE : View.VISIBLE);
+        int statusVisibility = label.isEmpty() ? View.GONE : View.VISIBLE;
+        status.setVisibility(statusVisibility);
+        findViewById(R.id.card_status_divider).setVisibility(statusVisibility);
         ((TextView) findViewById(R.id.detail_value)).setText(AuctionStore.average(this, card));
         ((TextView) findViewById(R.id.detail_change)).setText("—");
         ArrayList<AuctionItem> completed = AuctionStore.matching(this, card, true);

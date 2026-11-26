@@ -5,11 +5,9 @@ import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -18,20 +16,15 @@ public class BinderController {
     private final Activity activity;
     private final GridLayout grid;
     private final EditText search;
-    private final LinearLayout binder;
     private ArrayList<BinderStore.Card> cards;
 
     public BinderController(Activity activity) {
         this.activity = activity;
         grid = activity.findViewById(R.id.binder_grid);
         search = activity.findViewById(R.id.binder_search);
-        binder = activity.findViewById(R.id.binder_content);
-        View.OnLayoutChangeListener resize = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> updateHeight();
         grid.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if (right - left != oldRight - oldLeft) grid.post(this::sizeTiles);
         });
-        activity.findViewById(R.id.home_scroll).addOnLayoutChangeListener(resize);
-        activity.findViewById(R.id.page_title).addOnLayoutChangeListener(resize);
         activity.findViewById(R.id.add_card_button).setOnClickListener(v -> activity.startActivity(new Intent(activity, AddCardActivity.class)));
         search.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -89,9 +82,7 @@ public class BinderController {
         TextView message = activity.findViewById(R.id.binder_empty);
         message.setText(empty ? "Your Binder is empty.\nAdd cards to start your collection." : "No matching cards.");
         message.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
-        activity.findViewById(R.id.binder_button_space).setVisibility(empty ? View.GONE : View.VISIBLE);
-        binder.setGravity(empty ? Gravity.CENTER_VERTICAL : Gravity.TOP);
-        binder.post(this::updateHeight);
+        activity.findViewById(R.id.binder_button_space).setVisibility(count == 0 ? View.GONE : View.VISIBLE);
     }
 
     private void sizeTiles() {
@@ -134,13 +125,4 @@ public class BinderController {
         }
     }
 
-    private void updateHeight() {
-        View scroll = activity.findViewById(R.id.home_scroll);
-        View content = activity.findViewById(R.id.page_content);
-        View title = activity.findViewById(R.id.page_title);
-        int height = scroll.getHeight() - scroll.getPaddingTop() - scroll.getPaddingBottom()
-                - content.getPaddingTop() - content.getPaddingBottom();
-        if (title.getVisibility() != View.GONE) height -= title.getHeight();
-        binder.setMinimumHeight(Math.max(0, height));
-    }
 }
